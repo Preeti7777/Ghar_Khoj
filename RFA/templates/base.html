@@ -120,7 +120,7 @@
 
       <a href="" class="brand">
         <div class="brand-icon"><i class="ti ti-building"></i></div>
-        <span class="brand-name">Room<span>Finder</span></span>
+        <span class="brand-name">Ghar<span>Khoj</span></span>
       </a>
 
       <div class="search-wrap">
@@ -142,8 +142,8 @@
         </a>
         {% endif %}
         {% if user.role == 'LANDLORD' %}
-        <a href="" class="nav-link {% block nav_properties %}{% endblock %}">
-          <i class="ti ti-calendar-check"></i> My Properties
+        <a href="{% url 'add_property' %}" class="nav-link {% block nav_properties %}{% endblock %}">
+          <i class="ti ti-calendar-check"></i> Add Property
         </a>
         <a href="" class="nav-link {% block nav_documents %}{% endblock %}">
           <i class="ti ti-message-circle"></i> Documents

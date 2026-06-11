@@ -38,15 +38,7 @@ def register_view(request):
 
 def login_view(request):
 
-    # if request.user.is_authenticated:
-    #     if request.user.is_staff:
-    #         return redirect('admin_dashboard')
-    #     elif request.user.role == User.Role.LANDLORD:
-    #         return redirect('landlord_dashboard')
-    #     elif request.user.role == User.Role.TENANT:
-    #         return redirect('tenant_dashboard')
-    #     else:
-    #         return redirect('tenant_dashboard')
+
 
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -57,12 +49,8 @@ def login_view(request):
 
             if user.is_staff:
                 return redirect('admin_dashboard')
-            elif user.role == User.Role.LANDLORD:
-                return redirect('landlord_dashboard')
-            elif user.role == User.Role.TENANT:
-                return redirect('tenant_dashboard')
             else:
-                return redirect('tenant_dashboard')
+                return redirect('dashboard')
 
     else:
         form = LoginForm()
