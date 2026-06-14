@@ -38,8 +38,6 @@ def register_view(request):
 
 def login_view(request):
 
-
-
     if request.method == 'POST':
         form = LoginForm(request.POST)
 
@@ -50,7 +48,7 @@ def login_view(request):
             if user.is_staff:
                 return redirect('admin_dashboard')
             else:
-                return redirect('dashboard')
+                return redirect('property_list')
 
     else:
         form = LoginForm()
@@ -58,6 +56,7 @@ def login_view(request):
     return render(request, 'accounts/login.html', {
         'form': form
     })
+
 
 def logout_view(request):
     logout(request)

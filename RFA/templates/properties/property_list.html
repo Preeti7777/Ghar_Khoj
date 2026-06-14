@@ -1,0 +1,581 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+{% load static %}
+ <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #F7F6F3;
+      --surface:   #FFFFFF;
+      --border:    #E4E2DC;
+      --text:      #1A1917;
+      --muted:     #6B6860;
+      --accent:    #2B5EE8;
+      --accent-lt: #EEF2FD;
+      --red:       #E84C2B;
+      --green:     #1C8A52;
+      --radius:    14px;
+      --shadow:    0 2px 12px rgba(0,0,0,.07);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      color: var(--text);
+      letter-spacing: -.3px;
+    }
+    .logo span { color: var(--accent); }
+
+    /* ── Page hero ── */
+    .page-hero {
+      padding: 56px 32px 36px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .page-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    .page-hero p {
+      color: var(--muted);
+      font-size: .95rem;
+    }
+    .count-badge {
+      display: inline-block;
+      background: var(--accent-lt);
+      color: var(--accent);
+      font-size: .78rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 99px;
+      margin-bottom: 14px;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+    }
+
+    /* ── Grid ── */
+    .grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px 64px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+      gap: 24px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: transform .18s ease, box-shadow .18s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 28px rgba(0,0,0,.11);
+    }
+
+    /* image */
+    .card-img {
+      position: relative;
+      height: 210px;
+      overflow: hidden;
+      background: #DEDAD5;
+    }
+    .card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .3s ease;
+    }
+    .card:hover .card-img img { transform: scale(1.04); }
+
+    .img-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #AAA59E;
+      gap: 6px;
+      font-size: .8rem;
+    }
+    .img-placeholder svg { width: 36px; height: 36px; opacity: .45; }
+
+    .slider {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    .slide {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .slide-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.85);
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .card-img:hover .slide-btn { opacity: 1; }
+    .slide-btn.prev { left: 8px; }
+    .slide-btn.next { right: 8px; }
+    .slide-dots {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 5px;
+      z-index: 2;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      transition: background 0.2s;
+    }
+    .dot.active { background: #fff; }
+    /* type pill */
+    .type-pill {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(6px);
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 99px;
+      color: var(--text);
+      border: 1px solid rgba(0,0,0,.06);
+    }
+
+    /* body */
+    .card-body {
+      padding: 18px 20px 14px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.35;
+      color: var(--text);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .location {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--muted);
+      font-size: .82rem;
+    }
+    .location svg { flex-shrink: 0; width: 13px; height: 13px; }
+
+    /* rent row */
+    .rent-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .rent-amount {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .rent-label {
+      font-size: .75rem;
+      color: var(--muted);
+    }
+    .deposit-tag {
+      margin-left: auto;
+      font-size: .73rem;
+      color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+    }
+
+    /* facilities */
+    .facilities {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .fac-chip {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 9px;
+      font-size: .72rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .fac-chip svg { width: 11px; height: 11px; }
+
+    /* footer */
+    .card-footer {
+      border-top: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .available-date {
+      font-size: .76rem;
+      color: var(--green);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .available-date svg { width: 11px; height: 11px; }
+
+    .btn-view {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 16px;
+      font-size: .8rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .btn-view:hover { background: #1A48CC; }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center;
+      padding: 80px 24px;
+      color: var(--muted);
+      grid-column: 1/-1;
+    }
+    .empty svg { width: 52px; height: 52px; margin-bottom: 16px; opacity: .35; }
+    .empty h3 { font-size: 1.1rem; margin-bottom: 6px; color: var(--text); }
+    .empty p  { font-size: .88rem; }
+
+    /* responsive */
+    @media (max-width: 600px) {
+      .grid, .page-hero { padding-left: 16px; padding-right: 16px; }
+      .site-header { padding: 14px 16px; }
+    }
+  </style>
+</head>
+<body>
+<!-- Page Hero -->
+<div class="page-hero">
+  <div class="count-badge">{{ properties.count }} Available</div>
+  <h1>Find Your Next<br>Home in Nepal</h1>
+  <p>Verified listings — ready to move in.</p>
+</div>
+
+<!-- Property Grid -->
+<div class="grid">
+
+  {% if properties %}
+    {% for prop in properties %}
+    <article class="card">
+
+      <!-- Image -->
+    <div class="card-img">
+      {% with images=prop.images.all %}
+        {% if images %}
+          <div class="slider" id="slider-{{ prop.pk }}">
+            {% for img in images %}
+              <img src="{{ img.image.url }}" alt="{{ prop.title }}" loading="lazy"
+                  class="slide {% if forloop.first %}active{% endif %}"/>
+            {% endfor %}
+
+            {% if images|length > 1 %}
+              <button class="slide-btn prev" onclick="slideImg('{{ prop.pk }}', -1)">&#8249;</button>
+              <button class="slide-btn next" onclick="slideImg('{{ prop.pk }}', 1)">&#8250;</button>
+              <div class="slide-dots">
+                {% for img in images %}
+                  <span class="dot {% if forloop.first %}active{% endif %}"
+                        id="dot-{{ prop.pk }}-{{ forloop.counter0 }}"></span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="img-placeholder">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M3 9.75L12 3l9 6.75V21a.75.75 0 01-.75.75H3.75A.75.75 0 013 21V9.75z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 21V12h6v9"/>
+            </svg>
+            No photo yet
+          </div>
+        {% endif %}
+      {% endwith %}
+      <span class="type-pill">{{ prop.get_property_type_display }}</span>
+    </div>
+
+      <!-- Body -->
+      <div class="card-body">
+
+        <h2 class="card-title">{{ prop.title }}</h2>
+
+        <div class="location">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 21c-4-4.5-7-8.1-7-11a7 7 0 1114 0c0 2.9-3 6.5-7 11z"/>
+            <circle cx="12" cy="10" r="2" stroke-width="2"/>
+          </svg>
+          {{ prop.area }}, {{ prop.city }}, {{ prop.district }}
+        </div>
+
+        <div class="rent-row">
+          <span class="rent-amount">NPR {{ prop.monthly_rent|floatformat:0 }}</span>
+          <span class="rent-label">/ month</span>
+          <span class="deposit-tag">Deposit: NPR {{ prop.security_deposit|floatformat:0 }}</span>
+        </div>
+
+        <!-- Facilities -->
+        {% if prop.facility %}
+        <div class="facilities">
+
+          {% if prop.facility.wifi %}
+          <span class="fac-chip">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z"/></svg>
+            WiFi
+          </span>
+          {% endif %}
+
+          {% if prop.facility.car_parking %}
+          <span class="fac-chip">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg>
+            Car Parking
+          </span>
+          {% endif %}
+
+          {% if prop.facility.bike_parking %}
+          <span class="fac-chip">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v1m0 0l-3 9m3-9l3 9m-6.5-4h7M5.5 17a2.5 2.5 0 100-5 2.5 2.5 0 000 5zm13 0a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/></svg>
+            Bike Parking
+          </span>
+          {% endif %}
+
+          {% if prop.facility.attached_bathroom %}
+          <span class="fac-chip">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 10V6a2 2 0 012-2h1m-3 6v8a1 1 0 001 1h16a1 1 0 001-1v-8M6 10V7"/></svg>
+            Bathroom
+          </span>
+          {% endif %}
+
+          {% if prop.facility.drinking_water %}
+          <span class="fac-chip">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3C12 3 6 10 6 14a6 6 0 0012 0c0-4-6-11-6-11z"/></svg>
+            Drinking Water
+          </span>
+          {% endif %}
+
+          {% if prop.facility.water_supply_24_7 %}
+          <span class="fac-chip">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3C12 3 6 10 6 14a6 6 0 0012 0c0-4-6-11-6-11zM12 14v3"/></svg>
+            24/7 Water
+          </span>
+          {% endif %}
+
+          {% if prop.facility.furnished %}
+          <span class="fac-chip">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+            Furnished
+          </span>
+          {% endif %}
+
+          {% if prop.facility.balcony %}
+          <span class="fac-chip">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg>
+            Balcony
+          </span>
+          {% endif %}
+
+          {% if prop.facility.cctv %}
+          <span class="fac-chip">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9A2.25 2.25 0 004.5 18.75z"/></svg>
+            CCTV
+          </span>
+          {% endif %}
+
+          {% if prop.facility.security_guard %}
+          <span class="fac-chip">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+            Security Guard
+          </span>
+          {% endif %}
+
+          {% if prop.facility.laundry_facility %}
+          <span class="fac-chip">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12a4 4 0 100-8 4 4 0 000 8zM3 5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25v13.5A2.25 2.25 0 0118.75 21H5.25A2.25 2.25 0 013 18.75V5.25z"/></svg>
+            Laundry
+          </span>
+          {% endif %}
+
+          {% if prop.facility.generator %}
+          <span class="fac-chip">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+            Generator
+          </span>
+          {% endif %}
+
+          {% if prop.facility.pet_allowed %}
+          <span class="fac-chip">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg>
+            Pets OK
+          </span>
+          {% endif %}
+
+          {% if prop.facility.lift %}
+          <span class="fac-chip">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.5 15.75l7.5-7.5 7.5 7.5"/></svg>
+            Lift
+          </span>
+          {% endif %}
+
+        </div>
+        {% endif %}
+
+      </div>
+
+      <!-- Footer -->
+      <div class="card-footer">
+        <span class="available-date">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5"/>
+          </svg>
+          From {{ prop.available_date|date:"M j, Y" }}
+        </span>
+        <a href="{% url 'property_detail' prop.pk %}" class="btn-view">View Details</a>
+      </div>
+
+    </article>
+    {% endfor %}
+
+  {% else %}
+    <div class="empty">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M3 9.75L12 3l9 6.75V21a.75.75 0 01-.75.75H3.75A.75.75 0 013 21V9.75z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M9 21V12h6v9"/>
+      </svg>
+      <h3>No properties available right now</h3>
+      <p>New listings are added regularly — check back soon.</p>
+    </div>
+  {% endif %}
+
+</div>
+<script>
+  const sliderState = {};
+
+  function slideImg(pk, dir) {
+    const slider = document.getElementById('slider-' + pk);
+    if (!slider) return;
+    const slides = slider.querySelectorAll('.slide');
+    const dots   = slider.querySelectorAll('.dot');
+    if (!slides.length) return;
+
+    if (sliderState[pk] === undefined) sliderState[pk] = 0;
+
+    slides[sliderState[pk]].classList.remove('active');
+    if (dots[sliderState[pk]]) dots[sliderState[pk]].classList.remove('active');
+
+    sliderState[pk] = (sliderState[pk] + dir + slides.length) % slides.length;
+
+    slides[sliderState[pk]].classList.add('active');
+    if (dots[sliderState[pk]]) dots[sliderState[pk]].classList.add('active');
+  }
+
+  function startAutoSlide(pk) {
+    return setInterval(() => slideImg(pk, 1), 3000);
+  }
+
+  document.querySelectorAll('.slider').forEach(slider => {
+    const pk = slider.id.replace('slider-', '');
+    const slides = slider.querySelectorAll('.slide');
+    if (slides.length <= 1) return; // no need to auto-slide single images
+
+    sliderState[pk] = 0;
+    let timer = startAutoSlide(pk);
+
+    // pause on hover, resume on leave
+    slider.addEventListener('mouseenter', () => clearInterval(timer));
+    slider.addEventListener('mouseleave', () => { timer = startAutoSlide(pk); });
+  });
+</script>
+</body>
+{% endblock %}

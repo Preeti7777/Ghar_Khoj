@@ -66,6 +66,12 @@ class Property(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def get_primary_image(self):
+        return self.images.filter(is_primary=True).first() or self.images.first()
+
+    def get_ordered_images(self):
+        return self.images.order_by('-is_primary', 'uploaded_at')
+
     def __str__(self):
         return self.title
 

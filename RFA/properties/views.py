@@ -35,8 +35,8 @@ def add_property(request):
                 )
 
             messages.success(
-                request, 'Your property has been submitted and is pending review.')
-            return redirect('dashboard')  # change to your actual URL name
+                request, 'Your property has been submitted and is pending for review.')
+            return redirect('property_list')  # change to your actual URL name
 
         else:
             messages.error(
@@ -53,18 +53,9 @@ def add_property(request):
 
 
 def property_list(request):
-
-    properties = Property.objects.filter(
-        status='approved'
-    )
-
-    return render(
-        request,
-        'properties/property_list.html',
-        {
-            'properties': properties
-        }
-    )
+    properties = Property.objects.filter(status='approved').prefetch_related(
+        'images', 'facility').order_by('-created_at')
+    return render(request, 'properties/property_list.html', {'properties': properties})
 
 
 def property_detail(request, pk):

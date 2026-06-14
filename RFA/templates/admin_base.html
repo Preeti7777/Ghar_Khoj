@@ -3,6 +3,7 @@
 <head>
   <title>Admin Dashboard</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link href="https://jsdelivr.net" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f5f4; color: #1a1a1a; }
@@ -44,6 +45,7 @@
     .delta-down { color: #A32D2D; }
 
   </style>
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </head>
 <body>
 
@@ -70,9 +72,15 @@
 <div class="dash-body">
   <div class="sidebar">
     <div class="nav-section">Main</div>
-    <div class="nav-item active"><i class="ti ti-layout-dashboard"></i> Overview</div>
-    <div class="nav-item"><i class="ti ti-user"></i> Profile</div>
-    <div class="nav-item"><i class="ti ti-chart-bar"></i> Requests</div>
+    <a href="" class="nav-item {% if request.resolver_match.url_name == 'overview' %}active{% endif %}" style="text-decoration: none;">
+      <i class="ti ti-layout-dashboard"></i> Overview
+    </a>
+    <a href="" class="nav-item {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" style="text-decoration: none;">
+      <i class="ti ti-user"></i> Profile
+    </a>
+    <a href="{% url 'verification_list' %}" class="nav-item {% if request.resolver_match.url_name == 'verification_list' %}active{% endif %}" style="text-decoration: none;">
+      <i class="ti ti-shield-check"></i> Verification
+    </a>
   </div>
 
   <div class="main">
@@ -83,4 +91,12 @@
 
 
 </body>
+<script>
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+</script>
 </html>

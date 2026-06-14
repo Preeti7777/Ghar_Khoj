@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Tenant Portal{% endblock %} | Room Finder</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f7f8f5; color: #1a1a1a; display: flex; flex-direction: column; min-height: 100vh; }
@@ -22,6 +23,17 @@
       height: 64px;
       display: flex; align-items: center; justify-content: space-between; gap: 24px;
     }
+
+    /* Alerts */
+    .alert-success { background:#f0fdf4; border-color:#86efac; color:#166534; }
+    .alert-success .msg-timer { background:#16a34a; opacity:.4; }
+    .alert-error, .alert-danger { background:#fef2f2; border-color:#fca5a5; color:#991b1b; }
+    .alert-error .msg-timer, .alert-danger .msg-timer { background:#dc2626; opacity:.4; }
+    .alert-warning { background:#fffbeb; border-color:#fcd34d; color:#92400e; }
+    .alert-warning .msg-timer { background:#d97706; opacity:.4; }
+    .alert-info { background:#eff6ff; border-color:#93c5fd; color:#1e40af; }
+    .alert-info .msg-timer { background:#2563eb; opacity:.4; }
+    @keyframes msgShrink { from { width:100%; } to { width:0%; } }
 
     /* Brand */
     .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
@@ -187,11 +199,15 @@
   <!-- ── PAGE CONTENT ── -->
   <div class="page-content">
     {% if messages %}
-      {% for message in messages %}
-        <div class="flash {% if message.tags == 'success' %}flash-success{% elif message.tags == 'error' %}flash-error{% else %}flash-info{% endif %}">
-          {{ message }}
+      <div id="messages-container" style="position:fixed; top:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:10px; min-width:320px; max-width:420px;">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}" style="display:flex; align-items:flex-start; gap:12px; padding:13px 16px; border-radius:12px; border:0.5px solid; font-size:14px; line-height:1.5; position:relative; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,.08);">
+          <div style="flex:1;">{{ message }}</div>
+          <button onclick="this.closest('.alert').remove()" style="background:none; border:none; cursor:pointer; font-size:18px; opacity:.5; padding:0; line-height:1;">&times;</button>
+          <div class="msg-timer" style="position:absolute; bottom:0; left:0; height:3px; width:100%; animation:msgShrink 5s linear forwards;"></div>
         </div>
-      {% endfor %}
+        {% endfor %}
+      </div>
     {% endif %}
     {% block content %}{% endblock %}
   </div>
@@ -242,7 +258,16 @@
       </div>
     </div>
   </footer>
-
+  <script>
+    setTimeout(function () {
+      const container = document.getElementById('messages-container');
+      if (container) {
+        container.style.transition = 'opacity 0.5s ease';
+        container.style.opacity = '0';
+        setTimeout(() => container.remove(), 500); // remove after fade
+      }
+    }, 5000); // 5 seconds
+  </script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>
