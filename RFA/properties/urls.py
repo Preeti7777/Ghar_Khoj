@@ -18,8 +18,23 @@ urlpatterns = [
     ),
 
     path(
-        '<int:pk>/',
+        'detail/<int:pk>/',
         views.property_detail,
         name='property_detail'
+    ),
+    path(
+        "wishlist/",
+        views.wishlist_list,
+        name="wishlist_list"
+    ),
+    path(
+        "wishlist/remove/<int:pk>/",
+        views.remove_from_wishlist,
+        name="remove_from_wishlist"
+    ),
+    path(
+        'wishlist/toggle/<int:pk>/',
+        views.toggle_wishlist,
+        name='toggle_wishlist'
     ),
 ]

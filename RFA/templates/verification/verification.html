@@ -1,489 +1,1026 @@
 {% extends 'admin_base.html' %}
 {% block content %}
+
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-.page { padding: 1.5rem; }
-.page-header { margin-bottom: 1.5rem; }
-.page-title { font-size: 18px; font-weight: 500; color: #1a1a1a; }
-.page-sub { font-size: 13px; color: #888; margin-top: 4px; }
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem; }
-.stat { background: #f5f5f4; border-radius: 8px; padding: 12px 16px; }
-.stat-label { font-size: 12px; color: #888; margin-bottom: 4px; }
-.stat-val { font-size: 22px; font-weight: 500; color: #1a1a1a; }
-.stat-val.pending { color: #BA7517; }
-.stat-val.approved { color: #3B6D11; }
-.stat-val.rejected { color: #A32D2D; }
-.filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
-.filter-btn { padding: 6px 14px; border-radius: 8px; border: 0.5px solid #d4d4d4; background: #ffffff; font-size: 13px; color: #888; text-decoration: none; display: inline-block; }
-.filter-btn.active { background: #f5f5f4; color: #1a1a1a; font-weight: 500; border-color: #aaa; }
+  :root {
+    --admin-bg: #f5f5f4;
+    --admin-card: #ffffff;
+    --admin-border: #e5e5e5;
+    --admin-text: #1a1a1a;
+    --admin-muted: #888;
+    --admin-green: #0F6E56;
+    --admin-purple-soft: #EEEDFE;
+  }
 
-/* ── Table (desktop) ── */
-.table-wrap { background: #ffffff; border: 0.5px solid #e5e5e5; border-radius: 10px; overflow: hidden; }
-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
-th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 0.5px solid #e5e5e5; background: #f5f5f4; }
-td { padding: 12px 14px; border-bottom: 0.5px solid #e5e5e5; color: #1a1a1a; vertical-align: middle; }
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: #f5f5f4; }
+  .verification-page {
+    padding: 1.25rem;
+  }
 
-/* ── Mobile card list ── */
-.card-list { display: none; flex-direction: column; gap: 10px; }
-.prop-card { background: #ffffff; border: 0.5px solid #e5e5e5; border-radius: 10px; padding: 14px 16px; }
-.prop-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
-.prop-card-title { font-size: 14px; font-weight: 500; color: #1a1a1a; }
-.prop-card-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-.prop-card-field-label { font-size: 11px; color: #888; margin-bottom: 2px; }
-.prop-card-field-val { font-size: 13px; font-weight: 500; color: #1a1a1a; }
-.prop-card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 0.5px solid #e5e5e5; }
+  .page-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--admin-text);
+  }
 
-.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 500; }
-.badge-pending { background: #FAEEDA; color: #854F0B; }
-.badge-approved { background: #EAF3DE; color: #3B6D11; }
-.badge-rejected { background: #FCEBEB; color: #A32D2D; }
-.badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; display: inline-block; }
-.view-btn { padding: 5px 12px; font-size: 12px; border-radius: 8px; border: 0.5px solid #d4d4d4; background: transparent; cursor: pointer; color: #1a1a1a; text-decoration: none; display: inline-block; }
-.view-btn:hover { background: #f5f5f4; }
-.prop-sub { font-size: 11px; color: #888; margin-top: 2px; }
-.landlord-cell { display: flex; align-items: center; gap: 8px; }
-.avatar-sm { width: 28px; height: 28px; border-radius: 50%; background: #EEEDFE; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #534AB7; flex-shrink: 0; }
-.empty-state { text-align: center; padding: 3rem 1rem; color: #888; font-size: 14px; }
+  .page-sub {
+    font-size: 13px;
+    color: var(--admin-muted);
+    margin-top: 4px;
+  }
 
-/* ── Modal ── */
-.modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: flex-start; justify-content: center; padding: 2rem 1rem; overflow-y: auto; }
-.modal-backdrop.open { display: flex; }
-.modal { background: #ffffff; border-radius: 10px; border: 0.5px solid #e5e5e5; width: 100%; max-width: 680px; overflow: hidden; }
-.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 0.5px solid #e5e5e5; }
-.modal-title { font-size: 15px; font-weight: 500; color: #1a1a1a; }
-.modal-close { width: 28px; height: 28px; border-radius: 8px; border: 0.5px solid #d4d4d4; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #888; font-size: 16px; line-height: 1; }
-.modal-close:hover { background: #f5f5f4; }
-.modal-body { padding: 20px; max-height: 72vh; overflow-y: auto; }
-.section-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: #888; margin-bottom: 10px; margin-top: 20px; padding-bottom: 6px; border-bottom: 0.5px solid #e5e5e5; }
-.section-label:first-child { margin-top: 0; }
-.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.detail-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-.detail-item { background: #f5f5f4; border-radius: 8px; padding: 10px 12px; }
-.detail-item-label { font-size: 11px; color: #888; margin-bottom: 3px; }
-.detail-item-val { font-size: 13px; font-weight: 500; color: #1a1a1a; }
-.landlord-card { background: #f5f5f4; border-radius: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
-.landlord-avatar { width: 40px; height: 40px; border-radius: 50%; background: #EEEDFE; display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 14px; color: #534AB7; }
-.landlord-name { font-size: 14px; font-weight: 500; color: #1a1a1a; }
-.landlord-meta { font-size: 12px; color: #888; margin-top: 2px; }
-.desc-box { font-size: 13px; color: #555; line-height: 1.7; background: #f5f5f4; border-radius: 8px; padding: 12px 14px; }
-.rules-box { font-size: 13px; color: #555; line-height: 1.7; background: #f5f5f4; border-radius: 8px; padding: 12px 14px; white-space: pre-line; }
-.lalpurja-wrap { border-radius: 8px; overflow: hidden; border: 0.5px solid #e5e5e5; }
-.lalpurja-wrap img { width: 100%; display: block; max-height: 260px; object-fit: cover; }
-.lalpurja-missing { background: #f5f5f4; border-radius: 8px; padding: 24px; text-align: center; font-size: 13px; color: #888; border: 0.5px dashed #d4d4d4; }
-.map-link { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #185FA5; text-decoration: none; margin-top: 6px; }
-.map-link:hover { text-decoration: underline; }
-.modal-footer { padding: 14px 20px; border-top: 0.5px solid #e5e5e5; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.footer-left { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #888; }
-.action-btns { display: flex; gap: 8px; }
-.btn-approve { padding: 7px 18px; border-radius: 8px; border: none; background: #EAF3DE; color: #3B6D11; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-.btn-approve:hover { background: #C0DD97; }
-.btn-reject { padding: 7px 18px; border-radius: 8px; border: none; background: #FCEBEB; color: #A32D2D; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-.btn-reject:hover { background: #F7C1C1; }
+  .stat-card {
+    background: var(--admin-card);
+    border: 0.5px solid var(--admin-border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    height: 100%;
+  }
 
-/* ── Pagination ── */
-.pagination { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 1.25rem; justify-content: center; font-size: 13px; }
-.pagination a, .pagination span { padding: 5px 11px; border-radius: 8px; border: 0.5px solid #d4d4d4; color: #1a1a1a; text-decoration: none; }
-.pagination a:hover { background: #f5f5f4; }
-.pagination .current { background: #f5f5f4; font-weight: 500; border-color: #aaa; }
-.pagination .disabled { color: #bbb; pointer-events: none; }
+  .stat-label {
+    font-size: 12px;
+    color: var(--admin-muted);
+    margin-bottom: 5px;
+  }
 
-/* ════════════════════════════════════════════
-   RESPONSIVE BREAKPOINTS
-   ════════════════════════════════════════════ */
+  .stat-val {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--admin-text);
+  }
 
-/* Tablet — 4-col stats become 2×2, table still visible but tighter */
-@media (max-width: 768px) {
-  .stats-row { grid-template-columns: repeat(2, 1fr); }
-  th:nth-child(3),
-  td:nth-child(3),
-  th:nth-child(5),
-  td:nth-child(5) { display: none; }  /* hide Type & Submitted columns */
-}
+  .stat-val.pending { color: #BA7517; }
+  .stat-val.approved { color: #3B6D11; }
+  .stat-val.rejected { color: #A32D2D; }
 
-/* Mobile — hide table entirely, show card list instead */
-@media (max-width: 600px) {
-  .page { padding: 1rem; }
-  .stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .stat-val { font-size: 18px; }
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 0.5px solid #d4d4d4;
+    background: #fff;
+    color: #777;
+    font-size: 13px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
 
-  .table-wrap { display: none; }
-  .card-list { display: flex; }
+  .filter-btn:hover {
+    background: #f5f5f4;
+    color: var(--admin-text);
+  }
 
-  /* Modal goes full-screen */
-  .modal-backdrop { padding: 0; align-items: flex-end; }
-  .modal { border-radius: 14px 14px 0 0; max-width: 100%; max-height: 95vh; display: flex; flex-direction: column; }
-  .modal-body { flex: 1; max-height: none; overflow-y: auto; padding: 16px; }
-  .modal-footer { flex-direction: column; align-items: stretch; gap: 8px; }
-  .action-btns { width: 100%; }
-  .btn-approve, .btn-reject { flex: 1; justify-content: center; }
-  .footer-left { justify-content: center; }
+  .filter-btn.active {
+    background: var(--admin-purple-soft);
+    color: var(--admin-green);
+    border-color: transparent;
+    font-weight: 500;
+  }
 
-  /* Modal grids collapse to 2 then 1 column */
-  .detail-grid-3 { grid-template-columns: 1fr 1fr; }
-}
+  .table-card {
+    background: var(--admin-card);
+    border: 0.5px solid var(--admin-border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
 
-@media (max-width: 380px) {
-  .detail-grid,
-  .detail-grid-3 { grid-template-columns: 1fr; }
-  .prop-card-meta { grid-template-columns: 1fr; }
-}
+  .verification-table {
+    margin-bottom: 0;
+    font-size: 13px;
+    vertical-align: middle;
+  }
+
+  .verification-table thead th {
+    background: #f5f5f4;
+    color: var(--admin-muted);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-bottom: 0.5px solid var(--admin-border);
+    padding: 11px 14px;
+    white-space: nowrap;
+  }
+
+  .verification-table tbody td {
+    padding: 13px 14px;
+    border-bottom: 0.5px solid var(--admin-border);
+    color: var(--admin-text);
+  }
+
+  .verification-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .verification-table tbody tr:hover td {
+    background: #f8f8f7;
+  }
+
+  .property-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--admin-text);
+  }
+
+  .prop-sub {
+    font-size: 11px;
+    color: var(--admin-muted);
+    margin-top: 2px;
+  }
+
+  .landlord-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .avatar-sm {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--admin-purple-soft);
+    color: #534AB7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .owner-name,
+  .owner-email {
+    max-width: 160px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .owner-name {
+    font-size: 13px;
+    color: var(--admin-text);
+  }
+
+  .owner-email {
+    font-size: 11px;
+    color: var(--admin-muted);
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .badge-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .badge-pending {
+    background: #FAEEDA;
+    color: #854F0B;
+  }
+
+  .badge-approved {
+    background: #EAF3DE;
+    color: #3B6D11;
+  }
+
+  .badge-rejected {
+    background: #FCEBEB;
+    color: #A32D2D;
+  }
+
+  .view-btn {
+    padding: 5px 11px;
+    font-size: 12px;
+    border-radius: 8px;
+    border: 0.5px solid #d4d4d4;
+    background: transparent;
+    color: var(--admin-text);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .view-btn:hover {
+    background: #f5f5f4;
+  }
+
+  .mobile-card {
+    background: var(--admin-card);
+    border: 0.5px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .mobile-card-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--admin-text);
+  }
+
+  .mobile-info-label {
+    font-size: 11px;
+    color: var(--admin-muted);
+    margin-bottom: 2px;
+  }
+
+  .mobile-info-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--admin-text);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--admin-muted);
+    font-size: 14px;
+  }
+
+  .detail-section-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--admin-muted);
+    margin-bottom: 10px;
+    margin-top: 22px;
+    padding-bottom: 6px;
+    border-bottom: 0.5px solid var(--admin-border);
+  }
+
+  .detail-section-label:first-child {
+    margin-top: 0;
+  }
+
+  .detail-box {
+    background: #f5f5f4;
+    border-radius: 9px;
+    padding: 11px 13px;
+    height: 100%;
+  }
+
+  .detail-label {
+    font-size: 11px;
+    color: var(--admin-muted);
+    margin-bottom: 3px;
+  }
+
+  .detail-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--admin-text);
+    word-break: break-word;
+  }
+
+  .desc-box {
+    background: #f5f5f4;
+    border-radius: 9px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #555;
+  }
+
+  .lalpurja-wrap {
+    border-radius: 9px;
+    overflow: hidden;
+    border: 0.5px solid var(--admin-border);
+  }
+
+  .lalpurja-wrap img {
+    width: 100%;
+    max-height: 280px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .lalpurja-missing {
+    background: #f5f5f4;
+    border-radius: 9px;
+    padding: 24px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--admin-muted);
+    border: 0.5px dashed #d4d4d4;
+  }
+
+  .landlord-card {
+    background: #f5f5f4;
+    border-radius: 9px;
+    padding: 13px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .landlord-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--admin-purple-soft);
+    color: #534AB7;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .landlord-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--admin-text);
+  }
+
+  .landlord-meta {
+    font-size: 12px;
+    color: var(--admin-muted);
+    margin-top: 2px;
+    word-break: break-word;
+  }
+
+  .action-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-approve {
+    background: #EAF3DE;
+    color: #3B6D11;
+  }
+
+  .btn-approve:hover {
+    background: #C0DD97;
+    color: #3B6D11;
+  }
+
+  .btn-reject {
+    background: #FCEBEB;
+    color: #A32D2D;
+  }
+
+  .btn-reject:hover {
+    background: #F7C1C1;
+    color: #A32D2D;
+  }
+
+  .hidden-property-detail {
+    display: none;
+  }
+
+  .pagination .page-link {
+    font-size: 13px;
+    color: var(--admin-text);
+    border-radius: 8px;
+    margin: 0 3px;
+    border: 0.5px solid #d4d4d4;
+  }
+
+  .pagination .page-item.active .page-link {
+    background: var(--admin-purple-soft);
+    color: var(--admin-green);
+    border-color: transparent;
+  }
+
+  .pagination .page-item.disabled .page-link {
+    color: #bbb;
+  }
+
+  @media (max-width: 575.98px) {
+    .verification-page {
+      padding: 1rem;
+    }
+
+    .page-title {
+      font-size: 17px;
+    }
+
+    .stat-card {
+      padding: 12px 13px;
+    }
+
+    .stat-val {
+      font-size: 19px;
+    }
+
+    .modal-dialog {
+      margin: 0;
+      height: 100%;
+      display: flex;
+      align-items: end;
+    }
+
+    .modal-content {
+      border-radius: 16px 16px 0 0 !important;
+      max-height: 92vh;
+    }
+
+    .modal-body {
+      overflow-y: auto;
+    }
+
+    .modal-footer {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .modal-footer .action-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
 </style>
 
-<div class="page">
-  <div class="page-header">
-    <div class="page-title">Property Verification</div>
-    <div class="page-sub">Review and verify properties submitted by landlords</div>
-  </div>
-
-  <div class="stats-row">
-    <div class="stat">
-      <div class="stat-label">Total submitted</div>
-      <div class="stat-val">{{ stats.total }}</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Pending review</div>
-      <div class="stat-val pending">{{ stats.pending }}</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Approved</div>
-      <div class="stat-val approved">{{ stats.approved }}</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Rejected</div>
-      <div class="stat-val rejected">{{ stats.rejected }}</div>
+<div class="verification-page">
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-4">
+    <div>
+      <div class="page-title">Property Verification</div>
+      <div class="page-sub">Review and verify properties submitted by landlords</div>
     </div>
   </div>
 
-  <div class="filter-row">
-    <a href="?status=all"      class="filter-btn {% if status_filter == 'all' %}active{% endif %}">All</a>
-    <a href="?status=pending"  class="filter-btn {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
-    <a href="?status=approved" class="filter-btn {% if status_filter == 'approved' %}active{% endif %}">Approved</a>
-    <a href="?status=rejected" class="filter-btn {% if status_filter == 'rejected' %}active{% endif %}">Rejected</a>
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-label">Total submitted</div>
+        <div class="stat-val">{{ stats.total }}</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-label">Pending review</div>
+        <div class="stat-val pending">{{ stats.pending }}</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-label">Approved</div>
+        <div class="stat-val approved">{{ stats.approved }}</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-label">Rejected</div>
+        <div class="stat-val rejected">{{ stats.rejected }}</div>
+      </div>
+    </div>
   </div>
 
-  {# ── Desktop table ── #}
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th style="width:30%">Property</th>
-          <th style="width:20%">Owner</th>
-          <th style="width:13%">Type</th>
-          <th style="width:12%">Rent</th>
-          <th style="width:12%">Submitted</th>
-          <th style="width:8%">Status</th>
-          <th style="width:5%"></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for property in page_obj %}
-        <tr>
-          <td>
-            <div style="font-weight:500;color:#1a1a1a;font-size:13px;">{{ property.title }}</div>
-            <div class="prop-sub">
-              <i class="ti ti-map-pin" style="font-size:11px" aria-hidden="true"></i>
-              {{ property.city }}, {{ property.district }}
+  <!-- Filters -->
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <a href="?status=all" class="filter-btn {% if status_filter == 'all' %}active{% endif %}">
+      All
+    </a>
+    <a href="?status=pending" class="filter-btn {% if status_filter == 'pending' %}active{% endif %}">
+      Pending
+    </a>
+    <a href="?status=approved" class="filter-btn {% if status_filter == 'approved' %}active{% endif %}">
+      Approved
+    </a>
+    <a href="?status=rejected" class="filter-btn {% if status_filter == 'rejected' %}active{% endif %}">
+      Rejected
+    </a>
+  </div>
+
+  <!-- Desktop / Tablet Table -->
+  <div class="table-card d-none d-md-block">
+    <div class="table-responsive">
+      <table class="table verification-table align-middle">
+        <thead>
+          <tr>
+            <th style="min-width: 230px;">Property</th>
+            <th style="min-width: 220px;">Owner</th>
+            <th class="d-none d-lg-table-cell">Type</th>
+            <th>Rent</th>
+            <th class="d-none d-xl-table-cell">Submitted</th>
+            <th>Status</th>
+            <th class="text-end">Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for property in page_obj %}
+          <tr>
+            <td>
+              <div class="property-title">{{ property.title }}</div>
+              <div class="prop-sub">
+                <i class="ti ti-map-pin" aria-hidden="true"></i>
+                {{ property.city }}, {{ property.district }}
+              </div>
+            </td>
+
+            <td>
+              <div class="landlord-cell">
+                <div class="avatar-sm">
+                  {{ property.owner.get_full_name|default:property.owner.username|slice:":2"|upper }}
+                </div>
+                <div class="min-w-0">
+                  <div class="owner-name">
+                    {{ property.owner.get_full_name|default:property.owner.username }}
+                  </div>
+                  <div class="owner-email">
+                    {{ property.owner.email }}
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <td class="d-none d-lg-table-cell">
+              {{ property.get_property_type_display }}
+            </td>
+
+            <td>
+              Rs {{ property.monthly_rent|floatformat:0 }}
+            </td>
+
+            <td class="d-none d-xl-table-cell text-muted">
+              {{ property.created_at|date:"M d, Y" }}
+            </td>
+
+            <td>
+              {% if property.status == 'pending' %}
+                <span class="status-badge badge-pending">
+                  <span class="badge-dot"></span> Pending
+                </span>
+              {% elif property.status == 'approved' %}
+                <span class="status-badge badge-approved">
+                  <span class="badge-dot"></span> Approved
+                </span>
+              {% else %}
+                <span class="status-badge badge-rejected">
+                  <span class="badge-dot"></span> Rejected
+                </span>
+              {% endif %}
+            </td>
+
+            <td class="text-end">
+              <button type="button" class="view-btn" data-property-id="{{ property.id }}">
+                <i class="ti ti-eye" aria-hidden="true"></i>
+                View
+              </button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <i class="ti ti-building" style="font-size:32px;display:block;margin-bottom:8px" aria-hidden="true"></i>
+                No properties found for this filter.
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Mobile Cards -->
+  <div class="d-md-none">
+    <div class="row g-3">
+      {% for property in page_obj %}
+      <div class="col-12">
+        <div class="mobile-card">
+          <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+            <div class="min-w-0">
+              <div class="mobile-card-title">{{ property.title }}</div>
+              <div class="prop-sub">
+                <i class="ti ti-map-pin" aria-hidden="true"></i>
+                {{ property.city }}, {{ property.district }}
+              </div>
             </div>
-          </td>
-          <td>
-            <div class="landlord-cell">
+
+            <div>
+              {% if property.status == 'pending' %}
+                <span class="status-badge badge-pending">
+                  <span class="badge-dot"></span> Pending
+                </span>
+              {% elif property.status == 'approved' %}
+                <span class="status-badge badge-approved">
+                  <span class="badge-dot"></span> Approved
+                </span>
+              {% else %}
+                <span class="status-badge badge-rejected">
+                  <span class="badge-dot"></span> Rejected
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <div class="mobile-info-label">Type</div>
+              <div class="mobile-info-value">{{ property.get_property_type_display }}</div>
+            </div>
+
+            <div class="col-6">
+              <div class="mobile-info-label">Rent</div>
+              <div class="mobile-info-value">Rs {{ property.monthly_rent|floatformat:0 }}</div>
+            </div>
+
+            <div class="col-6">
+              <div class="mobile-info-label">Submitted</div>
+              <div class="mobile-info-value">{{ property.created_at|date:"M d, Y" }}</div>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between gap-3 pt-3 border-top">
+            <div class="landlord-cell min-w-0">
               <div class="avatar-sm">
                 {{ property.owner.get_full_name|default:property.owner.username|slice:":2"|upper }}
               </div>
-              <div>
-                <div>{{ property.owner.get_full_name|default:property.owner.username }}</div>
-                <div class="prop-sub">{{ property.owner.email }}</div>
+              <div class="min-w-0">
+                <div class="owner-name">
+                  {{ property.owner.get_full_name|default:property.owner.username }}
+                </div>
+                <div class="owner-email">
+                  {{ property.owner.email }}
+                </div>
               </div>
             </div>
-          </td>
-          <td>{{ property.get_property_type_display }}</td>
-          <td>Rs {{ property.monthly_rent|floatformat:0 }}</td>
-          <td style="color:#888">{{ property.created_at|date:"M d, Y" }}</td>
-          <td>
-            {% if property.status == 'pending' %}
-              <span class="badge badge-pending"><span class="badge-dot"></span> Pending</span>
-            {% elif property.status == 'approved' %}
-              <span class="badge badge-approved"><span class="badge-dot"></span> Approved</span>
-            {% else %}
-              <span class="badge badge-rejected"><span class="badge-dot"></span> Rejected</span>
-            {% endif %}
-          </td>
-          <td>
-            <button class="view-btn" onclick="openModal({{ property.id }})">
-              <i class="ti ti-eye" style="font-size:13px" aria-hidden="true"></i> View
+
+            <button type="button" class="view-btn flex-shrink-0" data-property-id="{{ property.id }}">
+              <i class="ti ti-eye" aria-hidden="true"></i>
+              View
             </button>
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="7">
-            <div class="empty-state">
-              <i class="ti ti-building" style="font-size:32px;display:block;margin-bottom:8px" aria-hidden="true"></i>
-              No properties found for this filter.
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <div class="empty-state mobile-card">
+          <i class="ti ti-building" style="font-size:32px;display:block;margin-bottom:8px" aria-hidden="true"></i>
+          No properties found for this filter.
+        </div>
+      </div>
+      {% endfor %}
+    </div>
   </div>
 
-  {# ── Mobile card list (hidden on desktop via CSS) ── #}
-  <div class="card-list">
-    {% for property in page_obj %}
-    <div class="prop-card">
-      <div class="prop-card-top">
-        <div>
-          <div class="prop-card-title">{{ property.title }}</div>
-          <div class="prop-sub">
-            <i class="ti ti-map-pin" style="font-size:11px" aria-hidden="true"></i>
-            {{ property.city }}, {{ property.district }}
-          </div>
-        </div>
-        {% if property.status == 'pending' %}
-          <span class="badge badge-pending"><span class="badge-dot"></span> Pending</span>
-        {% elif property.status == 'approved' %}
-          <span class="badge badge-approved"><span class="badge-dot"></span> Approved</span>
-        {% else %}
-          <span class="badge badge-rejected"><span class="badge-dot"></span> Rejected</span>
-        {% endif %}
-      </div>
-      <div class="prop-card-meta">
-        <div>
-          <div class="prop-card-field-label">Type</div>
-          <div class="prop-card-field-val">{{ property.get_property_type_display }}</div>
-        </div>
-        <div>
-          <div class="prop-card-field-label">Rent</div>
-          <div class="prop-card-field-val">Rs {{ property.monthly_rent|floatformat:0 }}</div>
-        </div>
-        <div>
-          <div class="prop-card-field-label">Submitted</div>
-          <div class="prop-card-field-val">{{ property.created_at|date:"M d, Y" }}</div>
-        </div>
-      </div>
-      <div class="prop-card-footer">
-        <div class="landlord-cell">
-          <div class="avatar-sm">
-            {{ property.owner.get_full_name|default:property.owner.username|slice:":2"|upper }}
-          </div>
-          <div>
-            <div style="font-size:13px;">{{ property.owner.get_full_name|default:property.owner.username }}</div>
-            <div class="prop-sub">{{ property.owner.email }}</div>
-          </div>
-        </div>
-        <button class="view-btn" onclick="openModal({{ property.id }})">
-          <i class="ti ti-eye" style="font-size:13px" aria-hidden="true"></i> View
-        </button>
-      </div>
-    </div>
-    {% empty %}
-    <div class="empty-state">
-      <i class="ti ti-building" style="font-size:32px;display:block;margin-bottom:8px" aria-hidden="true"></i>
-      No properties found for this filter.
-    </div>
-    {% endfor %}
-  </div>
-
+  <!-- Pagination -->
   {% if page_obj.has_other_pages %}
-  <div class="pagination">
-    {% if page_obj.has_previous %}
-      <a href="?status={{ status_filter }}&page={{ page_obj.previous_page_number }}">
-        <i class="ti ti-chevron-left" aria-hidden="true"></i>
-      </a>
-    {% else %}
-      <span class="disabled"><i class="ti ti-chevron-left" aria-hidden="true"></i></span>
-    {% endif %}
-
-    {% for num in page_obj.paginator.page_range %}
-      {% if page_obj.number == num %}
-        <span class="current">{{ num }}</span>
-      {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
-        <a href="?status={{ status_filter }}&page={{ num }}">{{ num }}</a>
+  <nav class="mt-4" aria-label="Property pagination">
+    <ul class="pagination justify-content-center flex-wrap">
+      {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?status={{ status_filter }}&page={{ page_obj.previous_page_number }}">
+          <i class="ti ti-chevron-left" aria-hidden="true"></i>
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">
+          <i class="ti ti-chevron-left" aria-hidden="true"></i>
+        </span>
+      </li>
       {% endif %}
-    {% endfor %}
 
-    {% if page_obj.has_next %}
-      <a href="?status={{ status_filter }}&page={{ page_obj.next_page_number }}">
-        <i class="ti ti-chevron-right" aria-hidden="true"></i>
-      </a>
-    {% else %}
-      <span class="disabled"><i class="ti ti-chevron-right" aria-hidden="true"></i></span>
-    {% endif %}
-  </div>
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active">
+          <span class="page-link">{{ num }}</span>
+        </li>
+        {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+        <li class="page-item">
+          <a class="page-link" href="?status={{ status_filter }}&page={{ num }}">{{ num }}</a>
+        </li>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?status={{ status_filter }}&page={{ page_obj.next_page_number }}">
+          <i class="ti ti-chevron-right" aria-hidden="true"></i>
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">
+          <i class="ti ti-chevron-right" aria-hidden="true"></i>
+        </span>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
   {% endif %}
 </div>
 
+<!-- Hidden modal detail templates -->
+{% for p in page_obj %}
+<div
+  id="property-detail-{{ p.id }}"
+  class="hidden-property-detail"
+  data-title="{{ p.title|escape }}"
+  data-status="{{ p.status }}"
+  data-approve-url="{% url 'approve_property' p.id %}"
+  data-reject-url="{% url 'reject_property' p.id %}"
+>
+  <div class="detail-section-label">Property details</div>
 
-{# ── Per-property data injected as JSON for the modal ── #}
-<script>
-const PROPERTIES = {
-  {% for p in page_obj %}
-  "{{ p.id }}": {
-    id:           {{ p.id }},
-    title:        "{{ p.title|escapejs }}",
-    description:  "{{ p.description|escapejs }}",
-    type:         "{{ p.get_property_type_display|escapejs }}",
-    province:     "{{ p.province|escapejs }}",
-    district:     "{{ p.district|escapejs }}",
-    city:         "{{ p.city|escapejs }}",
-    area:         "{{ p.area|escapejs }}",
-    ward:         "{{ p.ward_number }}",
-    latitude:     "{{ p.latitude }}",
-    longitude:    "{{ p.longitude }}",
-    rent:         "Rs {{ p.monthly_rent|floatformat:0 }}",
-    deposit:      "Rs {{ p.security_deposit|floatformat:0 }}",
-    available:    "{{ p.available_date|date:'M d, Y' }}",
-    rules:        "{{ p.rules|escapejs }}",
-    lalpurja:     "{% if p.lalpurja_image %}{{ p.lalpurja_image.url }}{% endif %}",
-    status:       "{{ p.status }}",
-    created:      "{{ p.created_at|date:'M d, Y' }}",
-    ownerName:    "{{ p.owner.get_full_name|default:p.owner.username|escapejs }}",
-    ownerEmail:   "{{ p.owner.email|escapejs }}",
-    ownerPhone:   "{{ p.owner.profile.phone|default:''|escapejs }}",
-    ownerInitials:"{{ p.owner.get_full_name|default:p.owner.username|slice:':2'|upper }}",
-    approveUrl:   "{% url 'approve_property' p.id %}",
-    rejectUrl:    "{% url 'reject_property' p.id %}",
-  },
-  {% endfor %}
-};
-const CSRF = "{{ csrf_token }}";
-</script>
-
-
-{# ── Modal ── #}
-<div class="modal-backdrop" id="modal" onclick="closeOnBackdrop(event)">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title" id="modal-title">Property details</span>
-      <button class="modal-close" onclick="closeModal()" aria-label="Close">&#x2715;</button>
+  <div class="row g-2">
+    <div class="col-12 col-sm-6">
+      <div class="detail-box">
+        <div class="detail-label">Type</div>
+        <div class="detail-value">{{ p.get_property_type_display }}</div>
+      </div>
     </div>
-    <div class="modal-body" id="modal-body"></div>
-    <div class="modal-footer">
-      <div class="footer-left" id="modal-status-label"></div>
-      <div class="action-btns" id="modal-actions"></div>
+
+    <div class="col-12 col-sm-6">
+      <div class="detail-box">
+        <div class="detail-label">Monthly rent</div>
+        <div class="detail-value">Rs {{ p.monthly_rent|floatformat:0 }}</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6">
+      <div class="detail-box">
+        <div class="detail-label">Security deposit</div>
+        <div class="detail-value">Rs {{ p.security_deposit|floatformat:0 }}</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6">
+      <div class="detail-box">
+        <div class="detail-label">Available from</div>
+        <div class="detail-value">{{ p.available_date|date:"M d, Y" }}</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6">
+      <div class="detail-box">
+        <div class="detail-label">Submitted</div>
+        <div class="detail-value">{{ p.created_at|date:"M d, Y" }}</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6">
+      <div class="detail-box">
+        <div class="detail-label">Status</div>
+        <div class="detail-value">
+          {% if p.status == 'pending' %}
+            <span class="status-badge badge-pending">
+              <span class="badge-dot"></span> Pending
+            </span>
+          {% elif p.status == 'approved' %}
+            <span class="status-badge badge-approved">
+              <span class="badge-dot"></span> Approved
+            </span>
+          {% else %}
+            <span class="status-badge badge-rejected">
+              <span class="badge-dot"></span> Rejected
+            </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-section-label">Location</div>
+
+  <div class="row g-2">
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="detail-box">
+        <div class="detail-label">Province</div>
+        <div class="detail-value">{{ p.province|default:"N/A" }}</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="detail-box">
+        <div class="detail-label">District</div>
+        <div class="detail-value">{{ p.district|default:"N/A" }}</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="detail-box">
+        <div class="detail-label">City</div>
+        <div class="detail-value">{{ p.city|default:"N/A" }}</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="detail-box">
+        <div class="detail-label">Area</div>
+        <div class="detail-value">{{ p.area|default:"N/A" }}</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="detail-box">
+        <div class="detail-label">Ward no.</div>
+        <div class="detail-value">{{ p.ward_number|default:"N/A" }}</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="detail-box">
+        <div class="detail-label">Coordinates</div>
+        <div class="detail-value">
+          {{ p.latitude|default:"N/A" }}, {{ p.longitude|default:"N/A" }}
+        </div>
+
+        {% if p.latitude and p.longitude %}
+        <a
+          href="https://www.google.com/maps?q={{ p.latitude }},{{ p.longitude }}"
+          target="_blank"
+          class="small text-decoration-none d-inline-flex align-items-center gap-1 mt-1"
+        >
+          <i class="ti ti-map" aria-hidden="true"></i>
+          Open in Maps
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-section-label">Description</div>
+  <div class="desc-box">
+    {{ p.description|default:"No description provided."|linebreaksbr }}
+  </div>
+
+  <div class="detail-section-label">Rules</div>
+  {% if p.rules %}
+  <div class="desc-box">
+    {{ p.rules|linebreaksbr }}
+  </div>
+  {% else %}
+  <div class="desc-box text-muted fst-italic">
+    No rules specified.
+  </div>
+  {% endif %}
+
+  <div class="detail-section-label">Lalpurja ownership document</div>
+  {% if p.lalpurja_image %}
+  <div class="lalpurja-wrap">
+    <img src="{{ p.lalpurja_image.url }}" alt="Lalpurja document">
+  </div>
+  {% else %}
+  <div class="lalpurja-missing">
+    <i class="ti ti-file-off" style="font-size:24px;display:block;margin-bottom:6px" aria-hidden="true"></i>
+    No lalpurja uploaded
+  </div>
+  {% endif %}
+
+  <div class="detail-section-label">Owner</div>
+  <div class="landlord-card">
+    <div class="landlord-avatar">
+      {{ p.owner.get_full_name|default:p.owner.username|slice:":2"|upper }}
+    </div>
+
+    <div class="min-w-0">
+      <div class="landlord-name">
+        {{ p.owner.get_full_name|default:p.owner.username }}
+      </div>
+
+      <div class="landlord-meta">
+        {{ p.owner.email }}
+        {% if p.owner.phone %}
+          &nbsp;·&nbsp; {{ p.owner.phone }}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="propertyModal" tabindex="-1" aria-labelledby="propertyModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+    <div class="modal-content border-0 rounded-4">
+      <div class="modal-header">
+        <h5 class="modal-title fs-6 fw-medium" id="propertyModalTitle">Property details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body" id="propertyModalBody"></div>
+
+      <div class="modal-footer d-flex justify-content-between gap-2">
+        <div class="small text-muted" id="propertyModalStatus"></div>
+        <div class="d-flex gap-2 flex-wrap" id="propertyModalActions"></div>
+      </div>
     </div>
   </div>
 </div>
 
-
 <script>
-function statusBadge(s) {
-  if (s === 'pending')  return '<span class="badge badge-pending"><span class="badge-dot"></span> Pending</span>';
-  if (s === 'approved') return '<span class="badge badge-approved"><span class="badge-dot"></span> Approved</span>';
-  return '<span class="badge badge-rejected"><span class="badge-dot"></span> Rejected</span>';
-}
+const CSRF = "{{ csrf_token }}";
 
-function openModal(id) {
-  const p = PROPERTIES[id];
-  if (!p) return;
-
-  document.getElementById('modal-title').textContent = p.title;
-
-  const lalpurjaHTML = p.lalpurja
-    ? `<div class="lalpurja-wrap"><img src="${p.lalpurja}" alt="Lalpurja document"></div>`
-    : `<div class="lalpurja-missing"><i class="ti ti-file-off" style="font-size:24px;display:block;margin-bottom:6px" aria-hidden="true"></i>No lalpurja uploaded</div>`;
-
-  const rulesHTML = p.rules
-    ? `<div class="rules-box">${p.rules}</div>`
-    : `<div class="desc-box" style="color:#888;font-style:italic">No rules specified.</div>`;
-
-  const mapsUrl = `https://www.google.com/maps?q=${p.latitude},${p.longitude}`;
-
-  document.getElementById('modal-body').innerHTML = `
-    <div class="section-label">Property details</div>
-    <div class="detail-grid">
-      <div class="detail-item"><div class="detail-item-label">Type</div><div class="detail-item-val">${p.type}</div></div>
-      <div class="detail-item"><div class="detail-item-label">Monthly rent</div><div class="detail-item-val">${p.rent}</div></div>
-      <div class="detail-item"><div class="detail-item-label">Security deposit</div><div class="detail-item-val">${p.deposit}</div></div>
-      <div class="detail-item"><div class="detail-item-label">Available from</div><div class="detail-item-val">${p.available}</div></div>
-      <div class="detail-item"><div class="detail-item-label">Submitted</div><div class="detail-item-val">${p.created}</div></div>
-      <div class="detail-item"><div class="detail-item-label">Status</div><div class="detail-item-val">${statusBadge(p.status)}</div></div>
-    </div>
-
-    <div class="section-label">Location</div>
-    <div class="detail-grid-3">
-      <div class="detail-item"><div class="detail-item-label">Province</div><div class="detail-item-val">${p.province}</div></div>
-      <div class="detail-item"><div class="detail-item-label">District</div><div class="detail-item-val">${p.district}</div></div>
-      <div class="detail-item"><div class="detail-item-label">City</div><div class="detail-item-val">${p.city}</div></div>
-      <div class="detail-item"><div class="detail-item-label">Area</div><div class="detail-item-val">${p.area}</div></div>
-      <div class="detail-item"><div class="detail-item-label">Ward no.</div><div class="detail-item-val">${p.ward}</div></div>
-      <div class="detail-item">
-        <div class="detail-item-label">Coordinates</div>
-        <div class="detail-item-val">${p.latitude}, ${p.longitude}</div>
-        <a href="${mapsUrl}" target="_blank" class="map-link">
-          <i class="ti ti-map" style="font-size:12px" aria-hidden="true"></i> Open in Maps
-        </a>
-      </div>
-    </div>
-
-    <div class="section-label">Description</div>
-    <div class="desc-box">${p.description}</div>
-
-    <div class="section-label">Rules</div>
-    ${rulesHTML}
-
-    <div class="section-label">Lalpurja (ownership document)</div>
-    ${lalpurjaHTML}
-
-    <div class="section-label">Owner</div>
-    <div class="landlord-card">
-      <div class="landlord-avatar">${p.ownerInitials}</div>
-      <div>
-        <div class="landlord-name">${p.ownerName}</div>
-        <div class="landlord-meta">${p.ownerEmail}${p.ownerPhone ? ' &nbsp;·&nbsp; ' + p.ownerPhone : ''}</div>
-      </div>
-    </div>
-  `;
-
-  document.getElementById('modal-status-label').innerHTML = 'Current status: ' + statusBadge(p.status);
-
-  const actions = document.getElementById('modal-actions');
-  if (p.status === 'pending') {
-    actions.innerHTML = `
-      <button class="btn-reject"  onclick="submitAction('${p.rejectUrl}')">
-        <i class="ti ti-x" aria-hidden="true"></i> Reject
-      </button>
-      <button class="btn-approve" onclick="submitAction('${p.approveUrl}')">
-        <i class="ti ti-check" aria-hidden="true"></i> Approve
-      </button>`;
-  } else if (p.status === 'approved') {
-    actions.innerHTML = `
-      <button class="btn-reject" onclick="submitAction('${p.rejectUrl}')">
-        <i class="ti ti-x" aria-hidden="true"></i> Revoke approval
-      </button>`;
-  } else {
-    actions.innerHTML = `
-      <button class="btn-approve" onclick="submitAction('${p.approveUrl}')">
-        <i class="ti ti-check" aria-hidden="true"></i> Approve instead
-      </button>`;
+function getStatusBadge(status) {
+  if (status === "pending") {
+    return '<span class="status-badge badge-pending"><span class="badge-dot"></span> Pending</span>';
   }
 
-  document.getElementById('modal').classList.add('open');
+  if (status === "approved") {
+    return '<span class="status-badge badge-approved"><span class="badge-dot"></span> Approved</span>';
+  }
+
+  return '<span class="status-badge badge-rejected"><span class="badge-dot"></span> Rejected</span>';
 }
 
 function submitAction(url) {
-  const form = document.createElement('form');
-  form.method = 'POST';
+  if (!url) {
+    console.error("Action URL missing.");
+    return;
+  }
+
+  const form = document.createElement("form");
+  form.method = "POST";
   form.action = url;
-  const csrf = document.createElement('input');
-  csrf.type  = 'hidden';
-  csrf.name  = 'csrfmiddlewaretoken';
-  csrf.value = CSRF;
-  form.appendChild(csrf);
+
+  const csrfInput = document.createElement("input");
+  csrfInput.type = "hidden";
+  csrfInput.name = "csrfmiddlewaretoken";
+  csrfInput.value = CSRF;
+
+  form.appendChild(csrfInput);
   document.body.appendChild(form);
   form.submit();
 }
 
-function closeModal() {
-  document.getElementById('modal').classList.remove('open');
-}
+document.addEventListener("DOMContentLoaded", function () {
+  const modalElement = document.getElementById("propertyModal");
+  const modal = new bootstrap.Modal(modalElement);
 
-function closeOnBackdrop(e) {
-  if (e.target === document.getElementById('modal')) closeModal();
-}
+  const modalTitle = document.getElementById("propertyModalTitle");
+  const modalBody = document.getElementById("propertyModalBody");
+  const modalStatus = document.getElementById("propertyModalStatus");
+  const modalActions = document.getElementById("propertyModalActions");
+
+  document.querySelectorAll(".view-btn").forEach(function (button) {
+    button.addEventListener("click", function () {
+      const propertyId = this.dataset.propertyId;
+      const detailTemplate = document.getElementById(`property-detail-${propertyId}`);
+
+      if (!detailTemplate) {
+        console.error(`Property detail not found for ID: ${propertyId}`);
+        return;
+      }
+
+      const title = detailTemplate.dataset.title || "Property details";
+      const status = detailTemplate.dataset.status || "pending";
+      const approveUrl = detailTemplate.dataset.approveUrl;
+      const rejectUrl = detailTemplate.dataset.rejectUrl;
+
+      modalTitle.textContent = title;
+      modalBody.innerHTML = detailTemplate.innerHTML;
+      modalStatus.innerHTML = "Current status: " + getStatusBadge(status);
+
+      if (status === "pending") {
+        modalActions.innerHTML = `
+          <button type="button" class="action-btn btn-reject" onclick="submitAction('${rejectUrl}')">
+            <i class="ti ti-x" aria-hidden="true"></i>
+            Reject
+          </button>
+
+          <button type="button" class="action-btn btn-approve" onclick="submitAction('${approveUrl}')">
+            <i class="ti ti-check" aria-hidden="true"></i>
+            Approve
+          </button>
+        `;
+      } else if (status === "approved") {
+        modalActions.innerHTML = `
+          <button type="button" class="action-btn btn-reject" onclick="submitAction('${rejectUrl}')">
+            <i class="ti ti-x" aria-hidden="true"></i>
+            Revoke approval
+          </button>
+        `;
+      } else {
+        modalActions.innerHTML = `
+          <button type="button" class="action-btn btn-approve" onclick="submitAction('${approveUrl}')">
+            <i class="ti ti-check" aria-hidden="true"></i>
+            Approve instead
+          </button>
+        `;
+      }
+
+      modal.show();
+    });
+  });
+});
 </script>
 
 {% endblock %}

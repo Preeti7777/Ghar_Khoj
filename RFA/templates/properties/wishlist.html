@@ -1,0 +1,525 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Wishlist{% endblock %}
+
+{% block content %}
+
+<style>
+  :root {
+    --p: #0F6E56;
+    --p-soft: #E1F5EE;
+    --p-dark: #085041;
+    --p-border: #9FE1CB;
+    --bg: #f8f9fa;
+    --surface: #ffffff;
+    --border: #e5e7eb;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --danger: #dc2626;
+    --danger-soft: #fee2e2;
+    --radius: 14px;
+  }
+
+  .wishlist-page {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .wishlist-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+
+  .wishlist-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--p-soft);
+    color: var(--p);
+    border: 1px solid var(--p-border);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 11px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
+
+  .wishlist-title {
+    font-size: clamp(1.7rem, 4vw, 2.35rem);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.15;
+    margin: 0;
+  }
+
+  .wishlist-sub {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 7px;
+  }
+
+  .browse-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--p);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 10px;
+    padding: 10px 15px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    border: none;
+  }
+
+  .browse-btn:hover {
+    background: var(--p-dark);
+    color: #fff;
+  }
+
+  .wishlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 18px;
+  }
+
+  .wishlist-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .2s ease;
+  }
+
+  .wishlist-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--p-border);
+    box-shadow: 0 10px 26px rgba(15, 110, 86, .12);
+  }
+
+  .wishlist-card.removing {
+    opacity: 0;
+    transform: scale(.97);
+  }
+
+  .wishlist-img {
+    height: 190px;
+    position: relative;
+    background: #edf2ef;
+    overflow: hidden;
+  }
+
+  .wishlist-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .3s ease;
+  }
+
+  .wishlist-card:hover .wishlist-img img {
+    transform: scale(1.04);
+  }
+
+  .wishlist-placeholder {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--p);
+    font-size: 38px;
+    background: var(--p-soft);
+  }
+
+  .type-pill {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(255, 255, 255, .92);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(0, 0, 0, .06);
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    z-index: 4;
+  }
+
+  /* Same wishlist heart style as property list */
+  .wishlist-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.92);
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    z-index: 5;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    transition: transform .16s ease, background .16s ease, color .16s ease, box-shadow .16s ease;
+  }
+
+  .wishlist-btn:hover {
+    transform: scale(1.08);
+    background: #fff;
+    color: #e11d48;
+    box-shadow: 0 8px 22px rgba(225,29,72,0.22);
+  }
+
+  .wishlist-btn.active {
+    background: #fff1f2;
+    color: #e11d48;
+  }
+
+  .wishlist-btn.active:hover {
+    background: #ffe4e6;
+    color: #be123c;
+  }
+
+  .wishlist-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+  }
+
+  .wishlist-btn.active svg {
+    fill: currentColor;
+  }
+
+  .wishlist-body {
+    padding: 16px;
+  }
+
+  .property-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 7px;
+    line-height: 1.35;
+  }
+
+  .property-location {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 13px;
+  }
+
+  .price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .price-main {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--p);
+  }
+
+  .price-sub {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .saved-date {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .wishlist-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .view-btn {
+    flex: 1;
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    background: var(--p);
+    color: #fff;
+    border: 1px solid var(--p);
+  }
+
+  .view-btn:hover {
+    background: var(--p-dark);
+    color: #fff;
+  }
+
+  .empty-state {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 60px 22px;
+    text-align: center;
+  }
+
+  .empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #fff1f2;
+    color: #e11d48;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    font-size: 30px;
+  }
+
+  .empty-state h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .empty-state p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+
+  @media (max-width: 620px) {
+    .wishlist-head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .browse-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .wishlist-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="wishlist-page">
+
+  <div class="wishlist-head">
+    <div>
+      <div class="wishlist-kicker">
+        <i class="ti ti-heart-filled"></i>
+        Saved properties
+      </div>
+
+      <h1 class="wishlist-title">My Wishlist</h1>
+
+      <p class="wishlist-sub">
+        Properties you saved for later.
+      </p>
+    </div>
+
+    <a href="{% url 'property_list' %}" class="browse-btn">
+      <i class="ti ti-search"></i>
+      Browse properties
+    </a>
+  </div>
+
+  {% if wishlist_items %}
+    <div class="wishlist-grid" id="wishlistGrid">
+      {% for item in wishlist_items %}
+        <article class="wishlist-card" id="wishlist-card-{{ item.property.id }}">
+
+          <div class="wishlist-img">
+            {% with img=item.property.get_primary_image %}
+              {% if img %}
+                <img src="{{ img.image.url }}" alt="{{ item.property.title }}">
+              {% else %}
+                <div class="wishlist-placeholder">
+                  <i class="ti ti-home"></i>
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            <span class="type-pill">
+              {{ item.property.get_property_type_display }}
+            </span>
+
+            <button
+              type="button"
+              class="wishlist-btn active wishlist-remove-btn"
+              data-url="{% url 'toggle_wishlist' item.property.id %}"
+              data-card-id="wishlist-card-{{ item.property.id }}"
+              aria-label="Remove from wishlist"
+              title="Remove from wishlist"
+            >
+              <svg viewBox="0 0 24 24">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="wishlist-body">
+            <div class="property-title">
+              {{ item.property.title }}
+            </div>
+
+            <div class="property-location">
+              <i class="ti ti-map-pin"></i>
+              {{ item.property.area }}, {{ item.property.city }}, {{ item.property.district }}
+            </div>
+
+            <div class="price-row">
+              <span class="price-main">
+                Rs {{ item.property.monthly_rent|floatformat:0 }}
+              </span>
+              <span class="price-sub">/ month</span>
+            </div>
+
+            <div class="saved-date">
+              Saved on {{ item.created_at|date:"M d, Y" }}
+            </div>
+
+            <div class="wishlist-actions">
+              <a href="{% url 'property_detail' item.property.id %}" class="view-btn">
+                <i class="ti ti-eye"></i>
+                View Details
+              </a>
+            </div>
+          </div>
+
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state" id="wishlistEmpty">
+      <div class="empty-icon">
+        <i class="ti ti-heart"></i>
+      </div>
+
+      <h2>No saved properties yet</h2>
+
+      <p>
+        Start browsing and tap the heart icon on properties you like.
+      </p>
+
+      <a href="{% url 'property_list' %}" class="browse-btn">
+        <i class="ti ti-building-community"></i>
+        Browse properties
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+
+<script>
+  function getCookie(name) {
+    let cookieValue = null;
+
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+
+    return cookieValue;
+  }
+
+  function showEmptyWishlist() {
+    const wishlistPage = document.querySelector(".wishlist-page");
+    const grid = document.getElementById("wishlistGrid");
+
+    if (!wishlistPage || !grid) return;
+
+    grid.insertAdjacentHTML("afterend", `
+      <div class="empty-state" id="wishlistEmpty">
+        <div class="empty-icon">
+          <i class="ti ti-heart"></i>
+        </div>
+
+        <h2>No saved properties yet</h2>
+
+        <p>
+          Start browsing and tap the heart icon on properties you like.
+        </p>
+
+        <a href="{% url 'property_list' %}" class="browse-btn">
+          <i class="ti ti-building-community"></i>
+          Browse properties
+        </a>
+      </div>
+    `);
+
+    grid.remove();
+  }
+
+  document.querySelectorAll(".wishlist-remove-btn").forEach(function(button) {
+    button.addEventListener("click", function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const url = this.dataset.url;
+      const cardId = this.dataset.cardId;
+      const card = document.getElementById(cardId);
+
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCookie("csrftoken"),
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      })
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(data) {
+        if (data.wishlisted === false && card) {
+          card.classList.add("removing");
+
+          setTimeout(function() {
+            card.remove();
+
+            const remainingCards = document.querySelectorAll(".wishlist-card");
+
+            if (remainingCards.length === 0) {
+              showEmptyWishlist();
+            }
+          }, 220);
+        }
+      })
+      .catch(function(error) {
+        console.log("Wishlist toggle error:", error);
+      });
+    });
+  });
+</script>
+
+{% endblock %}

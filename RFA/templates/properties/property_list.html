@@ -6,15 +6,18 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #F7F6F3;
-      --surface:   #FFFFFF;
-      --border:    #E4E2DC;
-      --text:      #1A1917;
-      --muted:     #6B6860;
-      --accent:    #2B5EE8;
-      --accent-lt: #EEF2FD;
+      --bg:        #f8f9fa;
+      --surface:   #ffffff;
+      --border:    #e5e7eb;
+      --text:      #1f2937;
+      --muted:     #6b7280;
+
+      --accent:    #0F6E56;
+      --accent-dark: #085041;
+      --accent-lt: #E1F5EE;
+
       --red:       #E84C2B;
-      --green:     #1C8A52;
+      --green:     #0F6E56;
       --radius:    14px;
       --shadow:    0 2px 12px rgba(0,0,0,.07);
     }
@@ -92,13 +95,15 @@
       border-radius: var(--radius);
       overflow: hidden;
       box-shadow: var(--shadow);
-      transition: transform .18s ease, box-shadow .18s ease;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
       display: flex;
       flex-direction: column;
     }
+
     .card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 8px 28px rgba(0,0,0,.11);
+      border-color: #9FE1CB;
+      box-shadow: 0 8px 28px rgba(15, 110, 86, .12);
     }
 
     /* image */
@@ -312,7 +317,7 @@
       text-decoration: none;
       transition: background .15s;
     }
-    .btn-view:hover { background: #1A48CC; }
+    .btn-view:hover { background: #145746; }
 
     /* ── Empty state ── */
     .empty {
@@ -329,6 +334,56 @@
     @media (max-width: 600px) {
       .grid, .page-hero { padding-left: 16px; padding-right: 16px; }
       .site-header { padding: 14px 16px; }
+    }
+
+    /* wishlist */
+    .wishlist-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,0.92);
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      z-index: 5;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+      transition: transform .16s ease, background .16s ease, color .16s ease, box-shadow .16s ease;
+    }
+
+    .wishlist-btn:hover {
+      transform: scale(1.08);
+      background: #fff;
+      color: #e11d48;
+      box-shadow: 0 8px 22px rgba(225,29,72,0.22);
+    }
+
+    .wishlist-btn.active {
+      background: #fff1f2;
+      color: #e11d48;
+    }
+
+    .wishlist-btn.active:hover {
+      background: #ffe4e6;
+      color: #be123c;
+    }
+
+    .wishlist-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+    }
+
+    .wishlist-btn.active svg {
+      fill: currentColor;
     }
   </style>
 </head>
@@ -349,6 +404,29 @@
 
       <!-- Image -->
     <div class="card-img">
+      {% if user.is_authenticated %}
+      <button
+        type="button"
+        class="wishlist-btn {% if prop.id in wishlist_ids %}active{% endif %}"
+        data-property-id="{{ prop.id }}"
+        data-url="{% url 'toggle_wishlist' prop.id %}"
+        aria-label="Toggle wishlist"
+      >
+        <svg viewBox="0 0 24 24">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+      </button>
+      {% else %}
+      <a
+        href="{% url 'login' %}"
+        class="wishlist-btn"
+        aria-label="Login to add wishlist"
+      >
+        <svg viewBox="0 0 24 24">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+      </a>
+      {% endif %}
       {% with images=prop.images.all %}
         {% if images %}
           <div class="slider" id="slider-{{ prop.pk }}">
@@ -576,6 +654,54 @@
     slider.addEventListener('mouseenter', () => clearInterval(timer));
     slider.addEventListener('mouseleave', () => { timer = startAutoSlide(pk); });
   });
+
+  function getCookie(name) {
+    let cookieValue = null;
+
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+
+    return cookieValue;
+  }
+
+  document.querySelectorAll('.wishlist-btn[data-url]').forEach(button => {
+    button.addEventListener('click', function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const url = this.dataset.url;
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken'),
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.wishlisted === true) {
+          this.classList.add('active');
+        } else {
+          this.classList.remove('active');
+        }
+      })
+      .catch(error => {
+        console.log('Wishlist error:', error);
+      });
+    });
+  });
+
 </script>
 </body>
 {% endblock %}

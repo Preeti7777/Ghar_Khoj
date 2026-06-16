@@ -4,36 +4,41 @@
 {% block title %}List Your Property{% endblock %}
 
 {% block content %}
-<div style="max-width: 780px; margin: 40px auto; padding: 0 20px;">
-
-  <div style="margin-bottom: 28px;">
-    <h1 style="font-size: 1.5rem; font-weight: 700; color: #1a1a2e;">List a new property</h1>
-    <p style="color: #6b7280; margin-top: 4px; font-size: .9rem;">Fill in the details below. Your listing will be reviewed before going live.</p>
-  </div>
-
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
-
-  <form method="post" enctype="multipart/form-data" novalidate>
-    {% csrf_token %}
-
     <style>
+
+      .breadcrumb-line {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 14px;
+        margin-left: 205px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .breadcrumb-line a {
+        color: var(--muted);
+        text-decoration: none;
+      }
+
+      .breadcrumb-line a:hover {
+        color: var(--p);
+      }
+
       .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 28px; margin-bottom: 20px; }
       .card h2 { font-size: 1rem; font-weight: 700; color: #1a1a2e; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f3f4f6; }
       .field { margin-bottom: 18px; }
       .field:last-child { margin-bottom: 0; }
       .field label { display: block; font-size: .8rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: .3px; margin-bottom: 6px; }
-      .field label .req { color: #5c6ac4; margin-left: 2px; }
+      .field label .req { color: #0F6E56; margin-left: 2px; }
       .field input, .field select, .field textarea {
         width: 100%; padding: 10px 13px; border: 1.5px solid #e5e7eb; border-radius: 8px;
         font-size: .9rem; font-family: inherit; color: #1a1a2e; background: #fff; outline: none;
         transition: border-color .15s, box-shadow .15s;
       }
       .field input:focus, .field select:focus, .field textarea:focus {
-        border-color: #5c6ac4; box-shadow: 0 0 0 3px rgba(92,106,196,.1);
+        border-color: #0F6E56; box-shadow: 0 0 0 3px rgba(15, 110, 86, .1);
       }
       .field textarea { resize: vertical; min-height: 90px; }
       .field select { appearance: none; cursor: pointer; }
@@ -43,29 +48,29 @@
       .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
       .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
       .input-affix { display: flex; border: 1.5px solid #e5e7eb; border-radius: 8px; overflow: hidden; transition: border-color .15s, box-shadow .15s; }
-      .input-affix:focus-within { border-color: #5c6ac4; box-shadow: 0 0 0 3px rgba(92,106,196,.1); }
+      .input-affix:focus-within { border-color: #0F6E56; box-shadow: 0 0 0 3px rgba(15, 110, 86, .1); }
       .input-affix span { background: #f9fafb; padding: 10px 12px; font-size: .82rem; color: #9ca3af; border-right: 1px solid #e5e7eb; font-weight: 600; display: flex; align-items: center; }
       .input-affix input { border: none !important; box-shadow: none !important; border-radius: 0 !important; flex: 1; }
 
       /* Facilities */
       .facility-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
       .fac-item { border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 11px 13px; display: flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; transition: all .15s; }
-      .fac-item:hover, .fac-item.checked { border-color: #5c6ac4; background: #eef0fb; }
+      .fac-item:hover, .fac-item.checked { border-color: #0F6E56; background: #eef0fb; }
       .fac-item input[type=checkbox] { display: none; }
       .fac-box { width: 17px; height: 17px; border-radius: 4px; border: 1.5px solid #d1d5db; flex-shrink: 0; display: grid; place-items: center; transition: all .15s; }
-      .fac-item.checked .fac-box { background: #5c6ac4; border-color: #5c6ac4; }
+      .fac-item.checked .fac-box { background: #0F6E56; border-color: #0F6E56; }
       .fac-item.checked .fac-box::after { content: ''; display: block; width: 4px; height: 8px; border: 2px solid #fff; border-top: none; border-left: none; transform: rotate(45deg) translate(-1px,-1px); }
       .fac-item .fac-icon { font-size: 1rem; flex-shrink: 0; }
       .fac-item span.fac-label { font-size: .82rem; font-weight: 500; color: #374151; }
 
       /* Photos */
       .drop-zone { border: 2px dashed #e5e7eb; border-radius: 8px; padding: 32px 20px; text-align: center; cursor: pointer; position: relative; transition: all .2s; }
-      .drop-zone:hover, .drop-zone.drag-over { border-color: #5c6ac4; background: #eef0fb; }
+      .drop-zone:hover, .drop-zone.drag-over { border-color: #0F6E56; background: #eef0fb; }
       .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
       #img-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 14px; }
       .thumb { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1.5px solid #e5e7eb; }
       .thumb img { width: 100%; height: 100%; object-fit: cover; }
-      .thumb .cover { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(92,106,196,.85); color: #fff; font-size: .65rem; font-weight: 700; text-align: center; padding: 3px; }
+      .thumb .cover { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(15, 110, 86, .85); color: #fff; font-size: .65rem; font-weight: 700; text-align: center; padding: 3px; }
       .thumb .rm { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,.5); border: none; border-radius: 50%; width: 20px; height: 20px; color: #fff; cursor: pointer; font-size: .75rem; display: grid; place-items: center; }
 
       /* Lalpurja */
@@ -86,7 +91,33 @@
 
       @media (max-width: 600px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
     </style>
+    <div class="breadcrumb-line">
+          <a href="{% url 'property_list' %}">
+            <i class="ti ti-home" aria-hidden="true"></i>
+            Properties 
+          </a>
+          <i class="ti ti-chevron-right" aria-hidden="true"></i>
+          <a href="{% url 'add_property' %}">
+            <i class="ti ti-plus" aria-hidden="true"></i>
+            Add Property
+          </a>
+    </div>
+    <div style="max-width: 780px; margin: 40px auto; padding: 0 20px;">
 
+      <div style="margin-bottom: 28px;">
+        <h1 style="font-size: 1.5rem; font-weight: 700; color: #0F6E56;">List a new property</h1>
+        <p style="color: #0F6E56; margin-top: 4px; font-size: .9rem;">Fill in the details below. Your listing will be reviewed before going live.</p>
+      </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+    
     <!-- ① Basic Info -->
     <div class="card">
       <h2>🏠 Basic information</h2>
@@ -348,12 +379,11 @@
     <!-- Submit -->
     <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:40px;">
       <a href="{% url 'property_list' %}" style="padding:10px 22px; border-radius:8px; border:1.5px solid #e5e7eb; font-size:.88rem; font-weight:600; color:#6b7280; text-decoration:none; background:#fff;">Cancel</a>
-      <button type="submit" style="padding:10px 26px; border-radius:8px; background:#5c6ac4; color:#fff; border:none; font-size:.88rem; font-weight:600; cursor:pointer; font-family:inherit;">Submit listing →</button>
+      <button type="submit" style="padding:10px 26px; border-radius:8px; background:#0F6E56; color:#fff; border:none; font-size:.88rem; font-weight:600; cursor:pointer; font-family:inherit;">Submit listing →</button>
     </div>
 
   </form>
 </div>
-
 <script>
   /* Facility toggle */
   document.querySelectorAll('.fac-item').forEach(item => {

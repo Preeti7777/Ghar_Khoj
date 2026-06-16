@@ -1,1 +1,1047 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ property.title }} - Property Details{% endblock %}
+
+{% block content %}
+
+<style>
+  :root {
+    --p: #0F6E56;
+    --p-soft: #E1F5EE;
+    --p-dark: #085041;
+    --border: #e5e7eb;
+    --radius: 14px;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --surface: #ffffff;
+    --bg: #f8f9fa;
+  }
+
+  body {
+    background: var(--bg);
+  }
+
+  .property-page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 24px 18px 56px;
+  }
+
+  .breadcrumb-line {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .breadcrumb-line a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .breadcrumb-line a:hover {
+    color: var(--p);
+  }
+
+  .breadcrumb-line span {
+    color: var(--p);
+    font-weight: 500;
+  }
+
+  .main-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 350px;
+    gap: 22px;
+    align-items: start;
+  }
+
+  .gallery-col {
+    min-width: 0;
+  }
+
+  .main-img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+    background: #ddd;
+    border: 1px solid var(--border);
+  }
+
+  .main-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: opacity .18s ease;
+  }
+
+  .no-img {
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 4rem;
+    background: #f3f4f6;
+  }
+
+  .photo-count {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0,0,0,0.65);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 11px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .thumb-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 7px;
+    margin-top: 7px;
+  }
+
+  .thumb {
+    aspect-ratio: 1 / 0.68;
+    border-radius: 9px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color .15s, transform .15s;
+    background: #fff;
+  }
+
+  .thumb:hover {
+    transform: translateY(-1px);
+  }
+
+  .thumb.active,
+  .thumb:hover {
+    border-color: var(--p);
+  }
+
+  .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .detail-col {
+    min-width: 0;
+  }
+
+  .sticky-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: sticky;
+    top: 90px;
+  }
+
+  .verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #dcfce7;
+    color: #166534;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 11px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
+
+  .verified-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+  }
+
+  .prop-title {
+    font-size: 21px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 7px;
+  }
+
+  .location-line {
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  .divider-sm {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 14px 0;
+  }
+
+  .price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+
+  .price-main {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .price-sub {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .deposit-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+
+  .avail-box {
+    background: var(--p-soft);
+    border: 1px solid #9FE1CB;
+    border-radius: 9px;
+    padding: 11px 12px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .avail-box i {
+    color: var(--p);
+    font-size: 17px;
+  }
+
+  .avail-text {
+    font-size: 13px;
+    color: #085041;
+    font-weight: 500;
+  }
+
+  .cta-btn,
+  .email-btn,
+  .outline-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 9px;
+    padding: 12px;
+    width: 100%;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-bottom: 8px;
+  }
+
+  .cta-btn {
+    background: var(--p);
+    color: #fff;
+    border: none;
+  }
+
+  .cta-btn:hover {
+    background: var(--p-dark);
+    color: #fff;
+  }
+
+  .email-btn {
+    background: var(--surface);
+    color: var(--p);
+    border: 1.5px solid var(--p);
+  }
+
+  .email-btn:hover {
+    background: var(--p-soft);
+    color: var(--p);
+  }
+
+  .outline-btn {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .outline-btn:hover {
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .verified-note {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+
+  .verified-note span {
+    color: var(--p);
+    font-weight: 600;
+  }
+
+  .quick-facts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .fact-item {
+    background: var(--bg);
+    border-radius: 9px;
+    padding: 9px 10px;
+  }
+
+  .fact-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+
+  .fact-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  .content-section {
+    margin-top: 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+
+  .section-head {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .highlights {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .hl-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 13px;
+    background: var(--bg);
+    border-radius: 10px;
+  }
+
+  .hl-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: var(--p-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--p);
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .hl-label {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .hl-val {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .desc-text,
+  .rules-text {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  .facility-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .fac-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    font-size: 13px;
+    border: 1px solid var(--border);
+  }
+
+  .fac-item.yes {
+    color: var(--text);
+    background: var(--surface);
+  }
+
+  .fac-item.yes i {
+    color: var(--p);
+    font-size: 15px;
+  }
+
+  .fac-item.no {
+    color: #9ca3af;
+    background: var(--bg);
+    text-decoration: line-through;
+  }
+
+  .fac-item.no i {
+    color: #d1d5db;
+    font-size: 15px;
+  }
+
+  .map-section {
+    background: var(--p-soft);
+    border: 1px solid #9FE1CB;
+    border-radius: 11px;
+    padding: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .map-area {
+    font-size: 15px;
+    font-weight: 600;
+    color: #04342C;
+  }
+
+  .map-sub {
+    font-size: 12px;
+    color: #085041;
+    margin-top: 3px;
+  }
+
+  .map-coords {
+    font-size: 11px;
+    color: var(--p);
+    margin-top: 6px;
+  }
+
+  .map-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--p);
+    color: #fff;
+    border-radius: 9px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .map-btn:hover {
+    background: var(--p-dark);
+    color: #fff;
+  }
+
+  .owner-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .owner-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--p-soft);
+    color: var(--p);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    border: 1.5px solid #9FE1CB;
+    flex-shrink: 0;
+  }
+
+  .owner-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .owner-email {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+    word-break: break-word;
+  }
+
+  .owner-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .sm-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 14px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .sm-btn-green {
+    background: var(--p);
+    color: #fff;
+    border: none;
+  }
+
+  .sm-btn-green:hover {
+    background: var(--p-dark);
+    color: #fff;
+  }
+
+  .sm-btn-outline {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .sm-btn-outline:hover {
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  @media (max-width: 820px) {
+    .main-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .sticky-card {
+      position: static;
+    }
+  }
+
+  @media (max-width: 680px) {
+    .property-page {
+      padding: 18px 14px 44px;
+    }
+
+    .highlights {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .facility-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .owner-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .owner-btns {
+      width: 100%;
+    }
+
+    .owner-btns .sm-btn {
+      flex: 1;
+    }
+
+    .map-section {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .map-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .thumb-row {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .highlights,
+    .facility-grid,
+    .quick-facts {
+      grid-template-columns: 1fr;
+    }
+
+    .price-main {
+      font-size: 24px;
+    }
+
+    .prop-title {
+      font-size: 19px;
+    }
+  }
+</style>
+
+<div class="property-page">
+
+  <div class="breadcrumb-line">
+    <a href="{% url 'property_list' %}">
+      <i class="ti ti-home" aria-hidden="true"></i>
+      Properties
+    </a>
+    <i class="ti ti-chevron-right" aria-hidden="true"></i>
+    <span>{{ property.city }}</span>
+  </div>
+
+  <div class="main-layout">
+
+    <!-- Gallery -->
+    <div class="gallery-col">
+      {% with images=property.get_ordered_images %}
+        <div class="main-img">
+          {% if images %}
+            {% for img in images %}
+              {% if forloop.first %}
+                <img id="mainImg" src="{{ img.image.url }}" alt="{{ property.title }}">
+              {% endif %}
+            {% endfor %}
+
+            <div class="photo-count">
+              <i class="ti ti-camera" aria-hidden="true"></i>
+              {{ images|length }} photo{{ images|length|pluralize }}
+            </div>
+          {% else %}
+            <div class="no-img">🏠</div>
+          {% endif %}
+        </div>
+
+        {% if images %}
+          <div class="thumb-row">
+            {% for img in images %}
+              <div
+                class="thumb {% if forloop.first %}active{% endif %}"
+                onclick="setMain('{{ img.image.url }}', this)"
+              >
+                <img src="{{ img.image.url }}" alt="{{ property.title }} image {{ forloop.counter }}">
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- Sticky detail card -->
+    <div class="detail-col">
+      <div class="sticky-card">
+
+        {% if property.status == 'approved' %}
+          <span class="verified-badge">
+            <span class="verified-dot"></span>
+            Verified property
+          </span>
+        {% endif %}
+
+        <div class="prop-title">{{ property.title }}</div>
+
+        <div class="location-line">
+          <i class="ti ti-map-pin" aria-hidden="true" style="font-size:14px;color:var(--p)"></i>
+          {{ property.area }}, {{ property.city }}, {{ property.district }}
+        </div>
+
+        <hr class="divider-sm">
+
+        <div class="price-row">
+          <span class="price-main">Rs {{ property.monthly_rent|floatformat:0 }}</span>
+          <span class="price-sub">/ month</span>
+        </div>
+
+        <div class="deposit-note">
+          Security deposit: Rs {{ property.security_deposit|floatformat:0 }}
+          · Available from {{ property.available_date|date:"M d, Y" }}
+        </div>
+
+        <div class="avail-box">
+          <i class="ti ti-circle-check" aria-hidden="true"></i>
+          <span class="avail-text">Available — contact landlord to book</span>
+        </div>
+
+        {% if property.owner.phone %}
+          <a href="tel:{{ property.owner.phone }}" class="cta-btn">
+            <i class="ti ti-phone" aria-hidden="true"></i>
+            Call landlord
+          </a>
+        {% else %}
+          <button type="button" class="cta-btn" disabled>
+            <i class="ti ti-phone" aria-hidden="true"></i>
+            Phone unavailable
+          </button>
+        {% endif %}
+
+        {% if property.owner.email %}
+          <a href="mailto:{{ property.owner.email }}" class="email-btn">
+            <i class="ti ti-mail" aria-hidden="true"></i>
+            Send email
+          </a>
+        {% endif %}
+
+        <p class="verified-note">
+          <i class="ti ti-shield-check" style="vertical-align:-2px;margin-right:3px;color:var(--p)" aria-hidden="true"></i>
+          <span>Verified listing</span> — details confirmed by our team
+        </p>
+
+        <div class="quick-facts">
+          <div class="fact-item">
+            <div class="fact-label">Property type</div>
+            <div class="fact-value">{{ property.get_property_type_display }}</div>
+          </div>
+
+          <div class="fact-item">
+            <div class="fact-label">Province</div>
+            <div class="fact-value">{{ property.province }}</div>
+          </div>
+
+          <div class="fact-item">
+            <div class="fact-label">Ward no.</div>
+            <div class="fact-value">{{ property.ward_number }}</div>
+          </div>
+
+          <div class="fact-item">
+            <div class="fact-label">Posted</div>
+            <div class="fact-value">{{ property.created_at|date:"M d, Y" }}</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Highlights + Description -->
+  <div class="content-section">
+    <div class="section-head">Property highlights</div>
+
+    <div class="highlights">
+      <div class="hl-item">
+        <div class="hl-icon">
+          <i class="ti ti-home-2" aria-hidden="true"></i>
+        </div>
+        <div>
+          <div class="hl-label">Type</div>
+          <div class="hl-val">{{ property.get_property_type_display }}</div>
+        </div>
+      </div>
+
+      <div class="hl-item">
+        <div class="hl-icon">
+          <i class="ti ti-map-pin" aria-hidden="true"></i>
+        </div>
+        <div>
+          <div class="hl-label">Location</div>
+          <div class="hl-val">{{ property.city }}, {{ property.district }}</div>
+        </div>
+      </div>
+
+      <div class="hl-item">
+        <div class="hl-icon">
+          <i class="ti ti-cash" aria-hidden="true"></i>
+        </div>
+        <div>
+          <div class="hl-label">Monthly rent</div>
+          <div class="hl-val">Rs {{ property.monthly_rent|floatformat:0 }}</div>
+        </div>
+      </div>
+
+      <div class="hl-item">
+        <div class="hl-icon">
+          <i class="ti ti-calendar-check" aria-hidden="true"></i>
+        </div>
+        <div>
+          <div class="hl-label">Available</div>
+          <div class="hl-val">{{ property.available_date|date:"M d, Y" }}</div>
+        </div>
+      </div>
+
+      <div class="hl-item">
+        <div class="hl-icon">
+          <i class="ti ti-bath" aria-hidden="true"></i>
+        </div>
+        <div>
+          <div class="hl-label">Bathroom</div>
+          <div class="hl-val">
+            {% if property.facility and property.facility.attached_bathroom %}
+              Attached
+            {% else %}
+              Not specified
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="hl-item">
+        <div class="hl-icon">
+          <i class="ti ti-parking" aria-hidden="true"></i>
+        </div>
+        <div>
+          <div class="hl-label">Parking</div>
+          <div class="hl-val">
+            {% if property.facility and property.facility.car_parking and property.facility.bike_parking %}
+              Car + Bike
+            {% elif property.facility and property.facility.car_parking %}
+              Car
+            {% elif property.facility and property.facility.bike_parking %}
+              Bike
+            {% else %}
+              Not available
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="desc-text">
+      {{ property.description|linebreaksbr }}
+    </p>
+  </div>
+
+  <!-- Facilities -->
+  <div class="content-section">
+    <div class="section-head">Facilities</div>
+
+    {% if property.facility %}
+      <div class="facility-grid">
+        <div class="fac-item {% if property.facility.car_parking %}yes{% else %}no{% endif %}">
+          <i class="ti {% if property.facility.car_parking %}ti-check{% else %}ti-x{% endif %}" aria-hidden="true"></i>
+          Car parking
+        </div>
+
+        <div class="fac-item {% if property.facility.bike_parking %}yes{% else %}no{% endif %}">
+          <i class="ti {% if property.facility.bike_parking %}ti-check{% else %}ti-x{% endif %}" aria-hidden="true"></i>
+          Bike parking
+        </div>
+
+        <div class="fac-item {% if property.facility.wifi %}yes{% else %}no{% endif %}">
+          <i class="ti {% if property.facility.wifi %}ti-check{% else %}ti-x{% endif %}" aria-hidden="true"></i>
+          WiFi
+        </div>
+
+        <div class="fac-item {% if property.facility.drinking_water %}yes{% else %}no{% endif %}">
+          <i class="ti {% if property.facility.drinking_water %}ti-check{% else %}ti-x{% endif %}" aria-hidden="true"></i>
+          Drinking water
+        </div>
+
+        <div class="fac-item {% if property.facility.water_supply_24_7 %}yes{% else %}no{% endif %}">
+          <i class="ti {% if property.facility.water_supply_24_7 %}ti-check{% else %}ti-x{% endif %}" aria-hidden="true"></i>
+          24/7 water supply
+        </div>
+
+        <div class="fac-item {% if property.facility.attached_bathroom %}yes{% else %}no{% endif %}">
+          <i class="ti {% if property.facility.attached_bathroom %}ti-check{% else %}ti-x{% endif %}" aria-hidden="true"></i>
+          Attached bathroom
+        </div>
+
+        <div class="fac-item {% if property.facility.balcony %}yes{% else %}no{% endif %}">
+          <i class="ti {% if property.facility.balcony %}ti-check{% else %}ti-x{% endif %}" aria-hidden="true"></i>
+          Balcony
+        </div>
+
+        <div class="fac-item {% if property.facility.furnished %}yes{% else %}no{% endif %}">
+          <i class="ti {% if property.facility.furnished %}ti-check{% else %}ti-x{% endif %}" aria-hidden="true"></i>
+          Furnished
+        </div>
+
+        <div class="fac-item {% if property.facility.cctv %}yes{% else %}no{% endif %}">
+          <i class="ti {% if property.facility.cctv %}ti-check{% else %}ti-x{% endif %}" aria-hidden="true"></i>
+          CCTV
+        </div>
+
+        <div class="fac-item {% if property.facility.security_guard %}yes{% else %}no{% endif %}">
+          <i class="ti {% if property.facility.security_guard %}ti-check{% else %}ti-x{% endif %}" aria-hidden="true"></i>
+          Security guard
+        </div>
+
+        <div class="fac-item {% if property.facility.pet_allowed %}yes{% else %}no{% endif %}">
+          <i class="ti {% if property.facility.pet_allowed %}ti-check{% else %}ti-x{% endif %}" aria-hidden="true"></i>
+          Pet allowed
+        </div>
+
+        <div class="fac-item {% if property.facility.laundry_facility %}yes{% else %}no{% endif %}">
+          <i class="ti {% if property.facility.laundry_facility %}ti-check{% else %}ti-x{% endif %}" aria-hidden="true"></i>
+          Laundry facility
+        </div>
+
+        <div class="fac-item {% if property.facility.lift %}yes{% else %}no{% endif %}">
+          <i class="ti {% if property.facility.lift %}ti-check{% else %}ti-x{% endif %}" aria-hidden="true"></i>
+          Lift
+        </div>
+
+        <div class="fac-item {% if property.facility.generator %}yes{% else %}no{% endif %}">
+          <i class="ti {% if property.facility.generator %}ti-check{% else %}ti-x{% endif %}" aria-hidden="true"></i>
+          Generator
+        </div>
+      </div>
+    {% else %}
+      <p class="rules-text mb-0">
+        No facility details have been added for this property.
+      </p>
+    {% endif %}
+  </div>
+
+  <!-- Rules -->
+  <div class="content-section">
+    <div class="section-head">House rules</div>
+
+    {% if property.rules %}
+      <p class="rules-text mb-0">
+        {{ property.rules|linebreaksbr }}
+      </p>
+    {% else %}
+      <p class="rules-text mb-0">
+        No rules mentioned by the landlord.
+      </p>
+    {% endif %}
+  </div>
+
+  <!-- Location -->
+  <div class="content-section">
+    <div class="section-head">Location</div>
+
+    <div class="map-section">
+      <div class="map-info">
+        <div class="map-area">
+          <i class="ti ti-map-pin" aria-hidden="true" style="vertical-align:-2px;margin-right:4px;font-size:15px"></i>
+          {{ property.area }}, {{ property.city }}
+        </div>
+
+        <div class="map-sub">
+          {{ property.district }}, {{ property.province }} · Ward {{ property.ward_number }}
+        </div>
+
+        <div class="map-coords">
+          {{ property.latitude }}° N, {{ property.longitude }}° E
+        </div>
+      </div>
+
+      <a
+        href="https://www.google.com/maps?q={{ property.latitude }},{{ property.longitude }}"
+        target="_blank"
+        class="map-btn"
+      >
+        <i class="ti ti-map" aria-hidden="true"></i>
+        Open in Maps
+      </a>
+    </div>
+  </div>
+
+  <!-- Landlord -->
+  <div class="content-section">
+    <div class="section-head">Landlord</div>
+
+    <div class="owner-row">
+      <div class="owner-info">
+        <div class="avatar">
+          {{ property.owner.get_full_name|default:property.owner.username|slice:":2"|upper }}
+        </div>
+
+        <div>
+          <div class="owner-name">
+            {{ property.owner.get_full_name|default:property.owner.username }}
+          </div>
+
+          <div class="owner-email">
+            {{ property.owner.email }}
+          </div>
+        </div>
+      </div>
+
+      <div class="owner-btns">
+        {% if property.owner.phone %}
+          <a href="tel:{{ property.owner.phone }}" class="sm-btn sm-btn-green">
+            <i class="ti ti-phone" aria-hidden="true"></i>
+            Call
+          </a>
+        {% endif %}
+
+        {% if property.owner.email %}
+          <a href="mailto:{{ property.owner.email }}" class="sm-btn sm-btn-outline">
+            <i class="ti ti-mail" aria-hidden="true"></i>
+            Email
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function setMain(url, thumb) {
+    const img = document.getElementById('mainImg');
+
+    if (img) {
+      img.style.opacity = '0';
+
+      setTimeout(function () {
+        img.src = url;
+        img.style.opacity = '1';
+      }, 150);
+    }
+
+    document.querySelectorAll('.thumb').forEach(function (t) {
+      t.classList.remove('active');
+    });
+
+    thumb.classList.add('active');
+  }
+</script>
+
+{% endblock %}

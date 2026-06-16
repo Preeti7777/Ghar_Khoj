@@ -1,0 +1,1381 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --p: #0F6E56;
+  --p-soft: #E1F5EE;
+  --p-mid: #1D9E75;
+  --p-dark: #085041;
+  --p-border: #9FE1CB;
+
+  --border: #e5e7eb;
+  --radius: 14px;
+  --rmd: 10px;
+
+  --text: #1f2937;
+  --muted: #6b7280;
+  --surface: #ffffff;
+  --bg: #f8f9fa;
+
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+}
+
+body {
+  background: var(--bg);
+}
+
+.profile-page {
+  background: var(--bg);
+  padding: 22px;
+  max-width: 1100px;
+  margin: 0 auto;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+.cover-bar {
+  height: 110px;
+  background: var(--p-soft);
+  border: 1px solid var(--p-border);
+  border-radius: var(--radius);
+  position: relative;
+  overflow: hidden;
+}
+
+.cover-pattern {
+  position: absolute;
+  inset: 0;
+  opacity: 0.18;
+}
+
+.cover-pattern circle {
+  fill: #0F6E56;
+}
+
+.avatar-wrap {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: -38px;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 5;
+}
+
+.avatar {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--p);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 23px;
+  font-weight: 600;
+  border: 4px solid var(--surface);
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+  z-index: 10;
+}
+
+.profile-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 20px 20px;
+  margin-top: -1px;
+  border-top: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  flex-wrap: wrap;
+}
+/* edit profile */
+.edit-link-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+/* modal */
+.profile-modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.profile-modal-backdrop.open {
+  display: flex;
+}
+
+.profile-modal {
+  width: 100%;
+  max-width: 620px;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.profile-modal-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.profile-modal-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.profile-modal-header p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.modal-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+}
+
+.profile-form {
+  padding: 20px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group.full {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.form-group input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.form-group input[type="file"] {
+  padding: 8px;
+  background: var(--bg);
+}
+
+.form-group small {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+@media(max-width: 520px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .profile-modal {
+    border-radius: 16px 16px 0 0;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+}
+.form-section h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+.file-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.file-card:last-child {
+  margin-bottom: 0;
+}
+
+.file-card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--p-soft);
+  color: var(--p);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.file-card-body small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin: 4px 0 9px;
+  line-height: 1.5;
+}
+
+.profile-file-input {
+  width: 100%;
+  border: 1px dashed #b7c8c0;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.profile-file-input:hover {
+  border-color: var(--p);
+  background: #fbfffd;
+}
+
+.btn-primary-profile,
+.btn-outline-profile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: var(--rmd);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-primary-profile {
+  background: var(--p);
+  color: #fff;
+  border: none;
+}
+
+.btn-primary-profile:hover {
+  background: var(--p-dark);
+  color: #fff;
+}
+
+.btn-outline-profile {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-outline-profile:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.user-name {
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.user-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--p-soft);
+  color: #085041;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+  border: 1px solid var(--p-border);
+}
+
+.user-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.meta-item {
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.meta-item i {
+  font-size: 15px;
+  color: var(--p);
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 18px 0 0;
+}
+
+.stat-card {
+  background: var(--bg);
+  border-radius: var(--rmd);
+  padding: 13px 14px;
+  text-align: center;
+}
+
+.stat-num {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--p);
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 16px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.profile-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 14px;
+}
+
+.card-title-profile {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.edit-link {
+  font-size: 12px;
+  color: var(--p);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.edit-link:hover {
+  color: var(--p-dark);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.info-label {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+
+.info-value {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.listing-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.listing-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.listing-thumb {
+  width: 68px;
+  height: 54px;
+  border-radius: 9px;
+  background: var(--p-soft);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.listing-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.listing-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.listing-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.listing-loc {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+.listing-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.listing-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--p);
+}
+
+.status-pill {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.pill-approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.pill-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.pill-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.activity-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.act-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--p-soft);
+  color: var(--p);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.act-text {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.act-time {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.setting-icon {
+  width: 31px;
+  height: 31px;
+  border-radius: var(--rmd);
+  background: var(--p-soft);
+  color: var(--p);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.setting-name {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.setting-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.toggle {
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--p);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 18px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.toggle.off {
+  background: #d1d5db;
+}
+
+.toggle.off::after {
+  left: 3px;
+}
+
+.chevron-btn {
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.verify-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.verify-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: var(--rmd);
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.verify-item.done {
+  background: var(--p-soft);
+  border-color: var(--p-border);
+}
+
+.verify-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.verify-left.done {
+  color: #085041;
+}
+
+.verify-left.pending {
+  color: var(--muted);
+}
+
+.verify-left i {
+  color: var(--p);
+}
+
+.verify-pill {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.verify-pill.done {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.verify-pill.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.danger-zone {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.danger-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--danger);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.danger-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--rmd);
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+}
+
+.empty-small {
+  font-size: 13px;
+  color: var(--muted);
+  padding: 4px 0;
+}
+
+@media(max-width: 760px) {
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media(max-width: 520px) {
+  .profile-page {
+    padding: 14px;
+  }
+
+  .avatar-wrap {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .btn-primary-profile,
+  .btn-outline-profile {
+    flex: 1;
+  }
+
+  .user-name {
+    font-size: 19px;
+  }
+
+  .listing-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+</style>
+
+<div class="profile-page">
+
+  <div class="cover-bar">
+    <svg class="cover-pattern" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="30" r="60"/>
+      <circle cx="200" cy="60" r="40"/>
+      <circle cx="380" cy="20" r="70"/>
+      <circle cx="540" cy="50" r="45"/>
+      <circle cx="680" cy="30" r="55"/>
+      <circle cx="120" cy="90" r="30"/>
+      <circle cx="300" cy="80" r="50"/>
+      <circle cx="460" cy="95" r="35"/>
+    </svg>
+  </div>
+
+  <div class="profile-header">
+    <div class="avatar-wrap">
+      <div class="avatar">
+        {% if profile_user.profile_image %}
+          <img src="{{ profile_user.profile_image.url }}" alt="{{ profile_user.username }}">
+        {% else %}
+          {{ profile_user.get_full_name|default:profile_user.username|slice:":2"|upper }}
+        {% endif %}
+      </div>
+
+      <div class="header-actions">
+        <a href="#" class="btn-outline-profile">
+          <i class="ti ti-share" aria-hidden="true"></i>
+          Share
+        </a>
+
+        <button type="button" class="btn-primary-profile" onclick="openEditModal()">
+          <i class="ti ti-edit" aria-hidden="true"></i>
+          Edit profile
+        </button>
+      </div>
+    </div>
+
+    <div class="user-name">
+      {{ profile_user.get_full_name|default:profile_user.username }}
+    </div>
+
+    <div>
+      <span class="user-role">
+        {% if profile_user.role == "LANDLORD" %}
+          <i class="ti ti-home" aria-hidden="true" style="font-size:12px"></i>
+          Property owner
+        {% else %}
+          <i class="ti ti-user" aria-hidden="true" style="font-size:12px"></i>
+          Tenant
+        {% endif %}
+      </span>
+    </div>
+
+    <div class="user-meta">
+      <span class="meta-item">
+        <i class="ti ti-user" aria-hidden="true"></i>
+        @{{ profile_user.username }}
+      </span>
+
+      <span class="meta-item">
+        <i class="ti ti-mail" aria-hidden="true"></i>
+        {{ profile_user.email|default:"No email added" }}
+      </span>
+
+      <span class="meta-item">
+        <i class="ti ti-phone" aria-hidden="true"></i>
+        {{ profile_user.phone|default:"No phone added" }}
+      </span>
+
+      <span class="meta-item">
+        <i class="ti ti-calendar" aria-hidden="true"></i>
+        Member since {{ profile_user.date_joined|date:"M Y" }}
+      </span>
+    </div>
+
+    <div class="stats-row">
+      {% if profile_user.role == "LANDLORD" %}
+        <div class="stat-card">
+          <div class="stat-num">{{ total_listings }}</div>
+          <div class="stat-label">Listings</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-num">{{ approved_count }}</div>
+          <div class="stat-label">Approved</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-num">{{ pending_count }}</div>
+          <div class="stat-label">Pending</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-num">{{ rejected_count }}</div>
+          <div class="stat-label">Rejected</div>
+        </div>
+      {% else %}
+        <div class="stat-card">
+          <div class="stat-num">{{ wishlist_count }}</div>
+          <div class="stat-label">Wishlist</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-num">0</div>
+          <div class="stat-label">Bookings</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-num">0</div>
+          <div class="stat-label">Reviews</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-num">0</div>
+          <div class="stat-label">Reports</div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="two-col">
+
+    <div>
+      <div class="profile-card">
+        <div class="card-title-profile">
+          Personal information
+          <button type="button" class="edit-link edit-link-btn" onclick="openEditModal()">
+            <i class="ti ti-edit" aria-hidden="true"></i>
+            Edit
+          </button>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">Full name</div>
+            <div class="info-value">
+              {{ profile_user.get_full_name|default:"Not added" }}
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">Username</div>
+            <div class="info-value">@{{ profile_user.username }}</div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">Email</div>
+            <div class="info-value">
+              {{ profile_user.email|default:"Not added" }}
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">Phone</div>
+            <div class="info-value">
+              {{ profile_user.phone|default:"Not added" }}
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">Role</div>
+            <div class="info-value">
+              {{ profile_user.get_role_display }}
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">Joined</div>
+            <div class="info-value">
+              {{ profile_user.date_joined|date:"M d, Y" }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if profile_user.role == "LANDLORD" %}
+      <div class="profile-card">
+        <div class="card-title-profile">
+          My listings
+          <a href="{% url 'property_list' %}" class="edit-link">
+            View all
+            <i class="ti ti-arrow-right" aria-hidden="true"></i>
+          </a>
+        </div>
+
+        {% for prop in my_properties %}
+          <div class="listing-item">
+            <div class="listing-thumb">
+              {% with img=prop.get_primary_image %}
+                {% if img %}
+                  <img src="{{ img.image.url }}" alt="{{ prop.title }}">
+                {% else %}
+                  <i class="ti ti-building" aria-hidden="true" style="font-size:23px;color:var(--p)"></i>
+                {% endif %}
+              {% endwith %}
+            </div>
+
+            <div class="listing-info">
+              <div class="listing-name">
+                {{ prop.title }}
+              </div>
+
+              <div class="listing-loc">
+                <i class="ti ti-map-pin" aria-hidden="true" style="font-size:12px"></i>
+                {{ prop.area }}, {{ prop.city }}
+              </div>
+
+              <div class="listing-footer">
+                <span class="listing-price">
+                  Rs {{ prop.monthly_rent|floatformat:0 }}/mo
+                </span>
+
+                {% if prop.status == "approved" %}
+                  <span class="status-pill pill-approved">Approved</span>
+                {% elif prop.status == "pending" %}
+                  <span class="status-pill pill-pending">Pending</span>
+                {% else %}
+                  <span class="status-pill pill-rejected">Rejected</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p class="empty-small">
+            You have not added any property listings yet.
+          </p>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="profile-card">
+        <div class="card-title-profile">
+          My wishlist
+          <a href="{% url 'property_list' %}" class="edit-link">
+            Browse properties
+            <i class="ti ti-arrow-right" aria-hidden="true"></i>
+          </a>
+        </div>
+
+        {% for item in wishlist_items %}
+          <div class="listing-item">
+            <div class="listing-thumb">
+              {% with img=item.property.get_primary_image %}
+                {% if img %}
+                  <img src="{{ img.image.url }}" alt="{{ item.property.title }}">
+                {% else %}
+                  <i class="ti ti-home-heart" aria-hidden="true" style="font-size:23px;color:var(--p)"></i>
+                {% endif %}
+              {% endwith %}
+            </div>
+
+            <div class="listing-info">
+              <div class="listing-name">
+                {{ item.property.title }}
+              </div>
+
+              <div class="listing-loc">
+                <i class="ti ti-map-pin" aria-hidden="true" style="font-size:12px"></i>
+                {{ item.property.area }}, {{ item.property.city }}
+              </div>
+
+              <div class="listing-footer">
+                <span class="listing-price">
+                  Rs {{ item.property.monthly_rent|floatformat:0 }}/mo
+                </span>
+
+                <a href="{% url 'property_detail' item.property.id %}" class="edit-link">
+                  View
+                </a>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p class="empty-small">
+            You have not added any properties to your wishlist yet.
+          </p>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="profile-card" style="margin-bottom:0">
+        <div class="card-title-profile">Recent activity</div>
+
+        {% if profile_user.role == "LANDLORD" %}
+          {% for prop in my_properties|slice:":3" %}
+            <div class="activity-item">
+              <div class="act-icon">
+                {% if prop.status == "approved" %}
+                  <i class="ti ti-circle-check" aria-hidden="true"></i>
+                {% elif prop.status == "pending" %}
+                  <i class="ti ti-clock" aria-hidden="true"></i>
+                {% else %}
+                  <i class="ti ti-x" aria-hidden="true"></i>
+                {% endif %}
+              </div>
+
+              <div>
+                <div class="act-text">
+                  Listing <strong>{{ prop.title }}</strong> is {{ prop.get_status_display }}
+                </div>
+                <div class="act-time">
+                  Posted on {{ prop.created_at|date:"M d, Y" }}
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <p class="empty-small">No recent activity yet.</p>
+          {% endfor %}
+        {% else %}
+          {% for item in wishlist_items|slice:":3" %}
+            <div class="activity-item">
+              <div class="act-icon">
+                <i class="ti ti-heart" aria-hidden="true"></i>
+              </div>
+
+              <div>
+                <div class="act-text">
+                  Added <strong>{{ item.property.title }}</strong> to wishlist
+                </div>
+                <div class="act-time">
+                  {{ item.created_at|date:"M d, Y" }}
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <p class="empty-small">No recent activity yet.</p>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <div>
+      <div class="profile-card">
+        <div class="card-title-profile">Account settings</div>
+
+        <div class="setting-item">
+          <div class="setting-left">
+            <div class="setting-icon">
+              <i class="ti ti-lock" aria-hidden="true"></i>
+            </div>
+            <div>
+              <div class="setting-name">Change password</div>
+              <div class="setting-sub">Update credentials</div>
+            </div>
+          </div>
+          <i class="ti ti-chevron-right chevron-btn" aria-hidden="true"></i>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="card-title-profile">Verification status</div>
+
+        <div class="verify-box">
+
+          <!-- Email -->
+          <div class="verify-item {% if profile_user.email %}done{% endif %}">
+            <div class="verify-left {% if profile_user.email %}done{% else %}pending{% endif %}">
+              <i class="ti ti-mail" aria-hidden="true"></i>
+              Email
+            </div>
+
+            {% if profile_user.email %}
+              <span class="verify-pill done">Added</span>
+            {% else %}
+              <span class="verify-pill pending">Missing</span>
+            {% endif %}
+          </div>
+
+          <!-- Phone -->
+          <div class="verify-item {% if profile_user.phone %}done{% endif %}">
+            <div class="verify-left {% if profile_user.phone %}done{% else %}pending{% endif %}">
+              <i class="ti ti-phone" aria-hidden="true"></i>
+              Phone
+            </div>
+
+            {% if profile_user.phone %}
+              <span class="verify-pill done">Added</span>
+            {% else %}
+              <span class="verify-pill pending">Missing</span>
+            {% endif %}
+          </div>
+
+          <!-- Profile Image -->
+          <div class="verify-item {% if profile_user.profile_image %}done{% endif %}">
+            <div class="verify-left {% if profile_user.profile_image %}done{% else %}pending{% endif %}">
+              <i class="ti ti-photo" aria-hidden="true"></i>
+              Profile image
+            </div>
+
+            {% if profile_user.profile_image %}
+              <span class="verify-pill done">Added</span>
+            {% else %}
+              <span class="verify-pill pending">Missing</span>
+            {% endif %}
+          </div>
+
+          <!-- Citizenship verification only for landlords -->
+          {% if profile_user.role == "LANDLORD" %}
+
+            <div class="verify-item {% if profile_user.citizenship_front_image %}done{% endif %}">
+              <div class="verify-left {% if profile_user.citizenship_front_image %}done{% else %}pending{% endif %}">
+                <i class="ti ti-id" aria-hidden="true"></i>
+                Citizenship front
+              </div>
+
+              {% if profile_user.citizenship_front_image %}
+                <span class="verify-pill done">Uploaded</span>
+              {% else %}
+                <span class="verify-pill pending">Missing</span>
+              {% endif %}
+            </div>
+
+            <div class="verify-item {% if profile_user.citizenship_back_image %}done{% endif %}">
+              <div class="verify-left {% if profile_user.citizenship_back_image %}done{% else %}pending{% endif %}">
+                <i class="ti ti-id" aria-hidden="true"></i>
+                Citizenship back
+              </div>
+
+              {% if profile_user.citizenship_back_image %}
+                <span class="verify-pill done">Uploaded</span>
+              {% else %}
+                <span class="verify-pill pending">Missing</span>
+              {% endif %}
+            </div>
+
+            <div class="verify-item {% if profile_user.photo_with_citizenship %}done{% endif %}">
+              <div class="verify-left {% if profile_user.photo_with_citizenship %}done{% else %}pending{% endif %}">
+                <i class="ti ti-camera" aria-hidden="true"></i>
+                Photo with citizenship
+              </div>
+
+              {% if profile_user.photo_with_citizenship %}
+                <span class="verify-pill done">Uploaded</span>
+              {% else %}
+                <span class="verify-pill pending">Missing</span>
+              {% endif %}
+            </div>
+
+          {% endif %}
+
+        </div>
+      </div>
+
+      <div class="danger-zone">
+        <div class="danger-title">
+          <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+          Danger zone
+        </div>
+
+        <button type="button" class="danger-btn">
+          <i class="ti ti-trash" aria-hidden="true"></i>
+          Delete account
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div class="profile-modal-backdrop" id="editProfileModal">
+  <div class="profile-modal">
+
+    <div class="profile-modal-header">
+      <div>
+        <h3>Edit profile</h3>
+        <p>Update your personal information and verification documents.</p>
+      </div>
+
+      <button type="button" class="modal-close-btn" onclick="closeEditModal()">
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="profile-form">
+      {% csrf_token %}
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>First name</label>
+          {{ form.first_name }}
+          {% if form.first_name.errors %}
+            <small class="form-error">{{ form.first_name.errors.0 }}</small>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>Last name</label>
+          {{ form.last_name }}
+          {% if form.last_name.errors %}
+            <small class="form-error">{{ form.last_name.errors.0 }}</small>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          {{ form.email }}
+          {% if form.email.errors %}
+            <small class="form-error">{{ form.email.errors.0 }}</small>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>Phone</label>
+          {{ form.phone }}
+          {% if form.phone.errors %}
+            <small class="form-error">{{ form.phone.errors.0 }}</small>
+          {% endif %}
+        </div>
+
+        <!-- <div class="form-group full">
+          <label>Profile image</label>
+          {{ form.profile_image }}
+
+          {% if profile_user.profile_image %}
+            <small>
+              Current profile image already uploaded.
+            </small>
+          {% endif %}
+        </div> -->
+        <div class="form-section">
+        <h4>Profile photo</h4>
+
+        <div class="file-card">
+          <div class="file-card-icon">
+            <i class="ti ti-user-circle"></i>
+          </div>
+
+          <div class="file-card-body">
+            <label>Profile image</label>
+
+            {% if profile_user.profile_image %}
+              <small>Current profile image is already uploaded.</small>
+            {% else %}
+              <small>Upload a clear profile photo.</small>
+            {% endif %}
+
+            {{ form.profile_image }}
+          </div>
+        </div>
+      </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn-outline-profile" onclick="closeEditModal()">
+          Cancel
+        </button>
+
+        <button type="submit" class="btn-primary-profile">
+          Save changes
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+<script>
+  function openEditModal() {
+    document.getElementById("editProfileModal").classList.add("open");
+  }
+
+  function closeEditModal() {
+    document.getElementById("editProfileModal").classList.remove("open");
+  }
+
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      closeEditModal();
+    }
+  });
+</script>
+{% endblock %}

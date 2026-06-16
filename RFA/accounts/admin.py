@@ -6,7 +6,7 @@ from .models import User
 class CustomUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
         ("Additional Info", {
-            "fields": ("role", "phone", "profile_image")
+            "fields": ("role", "phone", "profile_image", "citizenship_front_image", "citizenship_back_image", "photo_with_citizenship")
         }),
     )
 

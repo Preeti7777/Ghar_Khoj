@@ -3,242 +3,1111 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Tenant Portal{% endblock %} | Room Finder</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f7f8f5; color: #1a1a1a; display: flex; flex-direction: column; min-height: 100vh; }
 
-    /* ── NAVBAR ── */
-    .navbar {
-      background: #fff;
-      border-bottom: 1px solid #e8ede6;
-      position: sticky; top: 0; z-index: 200;
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>{% block title %}Tenant Portal{% endblock %} | GharKhoj</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
+
+    :root {
+      --primary: #0F6E56;
+      --primary-dark: #085041;
+      --primary-soft: #e4f3ee;
+      --primary-softer: #f0f7ee;
+
+      --border: #e8ede6;
+      --border-dark: #dde8d9;
+
+      --bg: #f7f8f5;
+      --surface: #ffffff;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+
+      --danger: #a32d2d;
+      --danger-bg: #fceaea;
+
+      --footer: #111f17;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body.mobile-menu-open {
+      overflow: hidden;
+    }
+
+    /* ─────────────────────────────
+       NAVBAR
+    ───────────────────────────── */
+
+    .navbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+
     .navbar-inner {
-      max-width: 1200px; margin: 0 auto;
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
       padding: 0 24px;
       height: 64px;
-      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
     }
 
-    /* Alerts */
-    .alert-success { background:#f0fdf4; border-color:#86efac; color:#166534; }
-    .alert-success .msg-timer { background:#16a34a; opacity:.4; }
-    .alert-error, .alert-danger { background:#fef2f2; border-color:#fca5a5; color:#991b1b; }
-    .alert-error .msg-timer, .alert-danger .msg-timer { background:#dc2626; opacity:.4; }
-    .alert-warning { background:#fffbeb; border-color:#fcd34d; color:#92400e; }
-    .alert-warning .msg-timer { background:#d97706; opacity:.4; }
-    .alert-info { background:#eff6ff; border-color:#93c5fd; color:#1e40af; }
-    .alert-info .msg-timer { background:#2563eb; opacity:.4; }
-    @keyframes msgShrink { from { width:100%; } to { width:0%; } }
-
-    /* Brand */
-    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
-    .brand-icon { width: 34px; height: 34px; border-radius: 9px; background: #0F6E56; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 17px; }
-    .brand-name { font-size: 16px; font-weight: 600; color: #1a1a1a; }
-    .brand-name span { color: #0F6E56; }
-
-    /* Search bar */
-    .search-wrap { flex: 1; max-width: 420px; position: relative; }
-    .search-wrap input {
-      width: 100%; padding: 9px 16px 9px 38px;
-      border: 1px solid #dde8d9; border-radius: 999px;
-      font-size: 13px; background: #f4f8f2; color: #1a1a1a; outline: none;
-      transition: border-color .2s, box-shadow .2s;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
     }
-    .search-wrap input:focus { border-color: #0F6E56; background: #fff; box-shadow: 0 0 0 3px rgba(15,110,86,.1); }
-    .search-wrap input::placeholder { color: #aaa; }
-    .search-wrap .si { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; color: #aaa; pointer-events: none; }
 
-    /* Nav links */
-    .nav-links { display: flex; align-items: center; gap: 4px; }
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 17px;
+    }
+
+    .brand-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .brand-name span {
+      color: var(--primary);
+    }
+
+    .desktop-search {
+      flex: 1;
+      max-width: 420px;
+      position: relative;
+    }
+
+    .desktop-search input,
+    .mobile-search input {
+      width: 100%;
+      padding: 9px 16px 9px 38px;
+      border: 1px solid var(--border-dark);
+      border-radius: 999px;
+      font-size: 13px;
+      background: #f4f8f2;
+      color: var(--text);
+      outline: none;
+      font-family: inherit;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+
+    .desktop-search input:focus,
+    .mobile-search input:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(15,110,86,.1);
+    }
+
+    .desktop-search input::placeholder,
+    .mobile-search input::placeholder {
+      color: #aaa;
+    }
+
+    .desktop-search .si,
+    .mobile-search .si {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: #aaa;
+      pointer-events: none;
+    }
+
+    .desktop-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
     .nav-link {
-      display: flex; align-items: center; gap: 6px;
-      padding: 7px 12px; border-radius: 8px;
-      font-size: 13px; color: #444; text-decoration: none; font-weight: 500;
-      transition: background .15s, color .15s; white-space: nowrap;
-    }
-    .nav-link i { font-size: 16px; }
-    .nav-link:hover { background: #f0f7ee; color: #0F6E56; }
-    .nav-link.active { background: #e4f3ee; color: #0F6E56; }
-    .nav-link .badge {
-      font-size: 10px; font-weight: 600; background: #0F6E56; color: #fff;
-      border-radius: 999px; padding: 1px 6px; margin-left: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #444;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background .15s, color .15s;
+      white-space: nowrap;
     }
 
-    /* User menu */
-    .user-menu { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-    .notif-btn { background: none; border: none; cursor: pointer; color: #555; font-size: 20px; padding: 6px; border-radius: 8px; position: relative; }
-    .notif-btn:hover { background: #f0f7ee; color: #0F6E56; }
-    .notif-dot { position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; background: #c0392b; border-radius: 50%; border: 2px solid #fff; }
+    .nav-link i {
+      font-size: 16px;
+    }
+
+    .nav-link:hover {
+      background: var(--primary-softer);
+      color: var(--primary);
+    }
+
+    .nav-link.active {
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .desktop-user-menu {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .user-dropdown {
+      display: flex;
+      align-items: center;
+    }
+
     .user-chip {
-      display: flex; align-items: center; gap: 9px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
       padding: 5px 12px 5px 5px;
-      border: 1px solid #dde8d9; border-radius: 999px;
-      cursor: pointer; background: #fff;
-      transition: box-shadow .2s, border-color .2s;
+      border: 1px solid var(--border-dark);
+      border-radius: 999px;
+      cursor: pointer;
+      background: #fff;
+      text-decoration: none;
+      color: inherit;
+      height: 42px;
+      min-height: 42px;
+      max-height: 42px;
+      line-height: 1;
+      transition: box-shadow .2s, border-color .2s, background .15s;
+      overflow: hidden;
     }
-    .user-chip:hover { border-color: #0F6E56; box-shadow: 0 2px 8px rgba(15,110,86,.1); }
-    .avatar { width: 30px; height: 30px; border-radius: 50%; background: #d4eddf; color: #0F6E56; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
-    .user-chip-name { font-size: 13px; font-weight: 500; color: #1a1a1a; }
-    .role-pill { font-size: 10px; font-weight: 600; background: #e4f3ee; color: #0F6E56; padding: 2px 7px; border-radius: 999px; }
 
-    /* ── CONTENT ── */
-    .page-content { flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; padding: 32px 24px; }
+    .user-chip:hover,
+    .user-chip.active {
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(15,110,86,.1);
+      background: var(--primary-soft);
+      color: inherit;
+    }
+
+    .nav-avatar {
+      width: 30px;
+      height: 30px;
+      min-width: 30px;
+      max-width: 30px;
+      border-radius: 50%;
+      background: #d4eddf;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .nav-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .user-chip-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      max-width: 110px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1;
+    }
+
+    .role-pill {
+      font-size: 10px;
+      font-weight: 700;
+      background: var(--primary-soft);
+      color: var(--primary);
+      padding: 3px 7px;
+      border-radius: 999px;
+      line-height: 1;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .logout-form {
+      display: flex;
+      align-items: center;
+      margin: 0;
+    }
+
+    .logout-btn {
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--danger);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 8px;
+      border-radius: 8px;
+      transition: background .15s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .logout-btn:hover {
+      background: var(--danger-bg);
+    }
+
+    .hamburger-btn {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--border-dark);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .hamburger-btn:hover {
+      background: var(--primary-softer);
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    /* ─────────────────────────────
+       MOBILE MENU
+    ───────────────────────────── */
+
+    .mobile-menu-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.42);
+      z-index: 280;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+
+    .mobile-menu-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(340px, 88vw);
+      height: 100vh;
+      background: #fff;
+      z-index: 300;
+      transform: translateX(100%);
+      transition: transform .24s ease;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--border);
+      box-shadow: -20px 0 40px rgba(0,0,0,.12);
+    }
+
+    .mobile-menu.open {
+      transform: translateX(0);
+    }
+
+    .mobile-menu-header {
+      height: 64px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .mobile-menu-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .mobile-close-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border-dark);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .mobile-close-btn:hover {
+      background: var(--primary-softer);
+      color: var(--primary);
+    }
+
+    .mobile-menu-body {
+      padding: 16px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .mobile-search {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .mobile-nav-section {
+      margin-bottom: 18px;
+    }
+
+    .mobile-section-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+
+    .mobile-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 12px;
+      border-radius: 10px;
+      color: #333;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 5px;
+      transition: background .15s, color .15s;
+    }
+
+    .mobile-nav-link i {
+      font-size: 18px;
+    }
+
+    .mobile-nav-link:hover,
+    .mobile-nav-link.active {
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .mobile-user-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: var(--primary-softer);
+      border: 1px solid var(--border-dark);
+      border-radius: 14px;
+      margin-bottom: 14px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .mobile-user-card.active {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    .mobile-user-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+
+    .mobile-user-role {
+      font-size: 12px;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .mobile-logout-btn {
+      width: 100%;
+      border: 1px solid #f5c6c6;
+      background: var(--danger-bg);
+      color: var(--danger);
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-size: 14px;
+      font-weight: 800;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      cursor: pointer;
+    }
+
+    .mobile-login-btn {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    /* ─────────────────────────────
+       PAGE CONTENT
+    ───────────────────────────── */
+
+    .page-content {
+      flex: 1;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 28px 24px;
+    }
 
     /* Flash messages */
-    .flash { padding: 11px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 18px; }
-    .flash-success { background: #e4f3ee; color: #0F6E56; border: 1px solid #b2d8c8; }
-    .flash-error   { background: #fceaea; color: #a32d2d; border: 1px solid #f5c6c6; }
-    .flash-info    { background: #e8f4fd; color: #185fa5; border: 1px solid #b5d4f4; }
 
-    /* ── FOOTER ── */
-    footer { background: #111f17; color: #c8d8c2; margin-top: auto; }
-    .footer-top { max-width: 1200px; margin: 0 auto; padding: 48px 24px 32px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; }
-    .footer-brand .brand-icon-lg { width: 38px; height: 38px; border-radius: 10px; background: #0F6E56; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 19px; margin-bottom: 12px; }
-    .footer-brand p { font-size: 13px; color: #8aaa82; line-height: 1.7; max-width: 240px; margin-top: 8px; }
-    .footer-brand .brand-name-lg { font-size: 16px; font-weight: 600; color: #fff; }
-    .footer-brand .brand-name-lg span { color: #4fc99a; }
-    .footer-socials { display: flex; gap: 10px; margin-top: 18px; }
-    .social-btn { width: 32px; height: 32px; border-radius: 8px; background: #1e3328; display: flex; align-items: center; justify-content: center; color: #8aaa82; font-size: 16px; text-decoration: none; transition: background .15s, color .15s; }
-    .social-btn:hover { background: #0F6E56; color: #fff; }
-    .footer-col h4 { font-size: 12px; font-weight: 600; color: #fff; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 14px; }
-    .footer-col a { display: block; font-size: 13px; color: #8aaa82; text-decoration: none; margin-bottom: 9px; transition: color .15s; }
-    .footer-col a:hover { color: #4fc99a; }
-    .footer-bottom { border-top: 1px solid #1e3328; }
-    .footer-bottom-inner { max-width: 1200px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-    .footer-bottom-inner p { font-size: 12px; color: #5a7a62; }
-    .footer-bottom-links { display: flex; gap: 16px; }
-    .footer-bottom-links a { font-size: 12px; color: #5a7a62; text-decoration: none; }
-    .footer-bottom-links a:hover { color: #4fc99a; }
+    .flash {
+      padding: 11px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
 
-    @media (max-width: 768px) {
-      .search-wrap { display: none; }
-      .nav-links { display: none; }
-      .footer-top { grid-template-columns: 1fr 1fr; gap: 24px; }
+    .flash-success {
+      background: var(--primary-soft);
+      color: var(--primary);
+      border: 1px solid #b2d8c8;
+    }
+
+    .flash-error {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid #f5c6c6;
+    }
+
+    .flash-info {
+      background: #e8f4fd;
+      color: #185fa5;
+      border: 1px solid #b5d4f4;
+    }
+
+    .alert-success {
+      background:#f0fdf4;
+      border-color:#86efac;
+      color:#166534;
+    }
+
+    .alert-success .msg-timer {
+      background:#16a34a;
+      opacity:.4;
+    }
+
+    .alert-error,
+    .alert-danger {
+      background:#fef2f2;
+      border-color:#fca5a5;
+      color:#991b1b;
+    }
+
+    .alert-error .msg-timer,
+    .alert-danger .msg-timer {
+      background:#dc2626;
+      opacity:.4;
+    }
+
+    .alert-warning {
+      background:#fffbeb;
+      border-color:#fcd34d;
+      color:#92400e;
+    }
+
+    .alert-warning .msg-timer {
+      background:#d97706;
+      opacity:.4;
+    }
+
+    .alert-info {
+      background:#eff6ff;
+      border-color:#93c5fd;
+      color:#1e40af;
+    }
+
+    .alert-info .msg-timer {
+      background:#2563eb;
+      opacity:.4;
+    }
+
+    @keyframes msgShrink {
+      from { width:100%; }
+      to { width:0%; }
+    }
+
+    /* ─────────────────────────────
+       FOOTER
+    ───────────────────────────── */
+
+    footer {
+      background: var(--footer);
+      color: #c8d8c2;
+      margin-top: auto;
+    }
+
+    .footer-top {
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 48px 24px 32px;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 40px;
+    }
+
+    .footer-brand .brand-icon-lg {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 19px;
+      margin-bottom: 12px;
+    }
+
+    .footer-brand p {
+      font-size: 13px;
+      color: #8aaa82;
+      line-height: 1.7;
+      max-width: 240px;
+      margin-top: 8px;
+    }
+
+    .footer-brand .brand-name-lg {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .footer-brand .brand-name-lg span {
+      color: #4fc99a;
+    }
+
+    .footer-socials {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .social-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #1e3328;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8aaa82;
+      font-size: 16px;
+      text-decoration: none;
+      transition: background .15s, color .15s;
+    }
+
+    .social-btn:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .footer-col h4 {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .footer-col a {
+      display: block;
+      font-size: 13px;
+      color: #8aaa82;
+      text-decoration: none;
+      margin-bottom: 9px;
+      transition: color .15s;
+    }
+
+    .footer-col a:hover {
+      color: #4fc99a;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid #1e3328;
+    }
+
+    .footer-bottom-inner {
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .footer-bottom-inner p {
+      font-size: 12px;
+      color: #5a7a62;
+    }
+
+    .footer-bottom-links {
+      display: flex;
+      gap: 16px;
+    }
+
+    .footer-bottom-links a {
+      font-size: 12px;
+      color: #5a7a62;
+      text-decoration: none;
+    }
+
+    .footer-bottom-links a:hover {
+      color: #4fc99a;
+    }
+
+    /* ─────────────────────────────
+       RESPONSIVE
+    ───────────────────────────── */
+
+    @media (max-width: 1100px) {
+      .desktop-search {
+        max-width: 300px;
+      }
+
+      .user-chip-name {
+        max-width: 82px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .desktop-search,
+      .desktop-nav,
+      .desktop-user-menu {
+        display: none;
+      }
+
+      .hamburger-btn {
+        display: flex;
+      }
+
+      .navbar-inner {
+        padding: 0 16px;
+      }
+
+      .page-content {
+        padding: 20px 14px;
+      }
+
+      .footer-top {
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .navbar-inner {
+        height: 60px;
+        padding: 0 12px;
+      }
+
+      .brand-name {
+        display: inline;
+        font-size: 15px;
+      }
+
+      .brand-icon {
+        width: 32px;
+        height: 32px;
+      }
+
+      .page-content {
+        padding: 16px 10px;
+      }
+
+      .mobile-menu {
+        width: 92vw;
+      }
+
+      .footer-top {
+        grid-template-columns: 1fr;
+        padding: 36px 18px 28px;
+      }
+
+      .footer-bottom-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px 18px;
+      }
     }
 
     {% block extra_css %}{% endblock %}
   </style>
 </head>
+
 <body>
 
-  <!-- ── NAVBAR ── -->
+  <!-- ─────────────────────────────
+       NAVBAR
+  ───────────────────────────── -->
+
   <nav class="navbar">
     <div class="navbar-inner">
 
-      <a href="" class="brand">
-        <div class="brand-icon"><i class="ti ti-building"></i></div>
+      <a href="{% url 'property_list' %}" class="brand">
+        <div class="brand-icon">
+          <i class="ti ti-building"></i>
+        </div>
         <span class="brand-name">Ghar<span>Khoj</span></span>
       </a>
 
-      <div class="search-wrap">
+      <div class="desktop-search">
         <i class="ti ti-search si"></i>
         <input type="text" placeholder="Search rooms, locations...">
       </div>
-      
-      <div class="nav-links">
-        <a href="" class="nav-link {% block nav_home %}{% endblock %}">
-          <i class="ti ti-building-community"></i> Home
+
+      <div class="desktop-nav">
+        <a href="{% url 'property_list' %}"
+           class="nav-link {% if request.resolver_match.url_name == 'property_list' or request.resolver_match.url_name == 'property_detail' %}active{% endif %}">
+          <i class="ti ti-building-community"></i>
+          Home
         </a>
-        {% if user.role == 'TENANT' %}
-        <a href="" class="nav-link {% block nav_favourites %}{% endblock %}">
-          <i class="ti ti-heart"></i> Favourites
-        </a>
-        <a href="" class="nav-link {% block nav_messages %}{% endblock %}">
-          <i class="ti ti-message-circle"></i> Reports
-          <!-- <span class="badge"></span> -->
-        </a>
+
+        {% if user.is_authenticated and user.role == 'TENANT' %}
+          <a href="{% url 'wishlist_list' %}"
+             class="nav-link {% if request.resolver_match.url_name == 'wishlist_list' %}active{% endif %}">
+            <i class="ti ti-heart"></i>
+            Wishlist
+          </a>
+
+          <a href="#"
+             class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+            <i class="ti ti-message-circle"></i>
+            Reports
+          </a>
         {% endif %}
-        {% if user.role == 'LANDLORD' %}
-        <a href="{% url 'add_property' %}" class="nav-link {% block nav_properties %}{% endblock %}">
-          <i class="ti ti-calendar-check"></i> Add Property
-        </a>
-        <a href="" class="nav-link {% block nav_documents %}{% endblock %}">
-          <i class="ti ti-message-circle"></i> Documents
-          <!-- <span class="badge"></span> -->
-        </a>
+
+        {% if user.is_authenticated and user.role == 'LANDLORD' %}
+          <a href="{% url 'add_property' %}"
+             class="nav-link {% if request.resolver_match.url_name == 'add_property' %}active{% endif %}">
+            <i class="ti ti-calendar-check"></i>
+            Add Property
+          </a>
+
+          <a href="#"
+             class="nav-link {% if request.resolver_match.url_name == 'documents' %}active{% endif %}">
+            <i class="ti ti-file-text"></i>
+            Documents
+          </a>
         {% endif %}
       </div>
-      
 
+      <div class="desktop-user-menu">
+        {% if user.is_authenticated %}
+          <div class="user-dropdown">
+            <a href="{% url 'profile' %}"
+               class="user-chip clickable {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
 
-      <div class="user-menu">
-        <!-- <button class="notif-btn" title="Notifications">
-          <i class="ti ti-bell"></i>
-          <span class="notif-dot"></span>
-        </button> -->
-        <div class="user-dropdown">
-          <a href="" class="user-chip clickable nav-link">
-                <div class="avatar">
-                    {{ user.get_full_name|default:user.username|slice:":2"|upper }}
-                </div>
+              <div class="nav-avatar">
+                {% if user.profile_image %}
+                  <img src="{{ user.profile_image.url }}" alt="{{ user.username }}">
+                {% else %}
+                  {{ user.get_full_name|default:user.username|slice:":2"|upper }}
+                {% endif %}
+              </div>
 
-                <span class="user-chip-name">
-                    {{ user.get_full_name|default:user.username }}
-                </span>
+              <span class="user-chip-name">
+                {{ user.get_full_name|default:user.username }}
+              </span>
 
-                <span class="role-pill">
-                    {{ user.role|title }}
-                </span>
+              <span class="role-pill">
+                {{ user.role|title }}
+              </span>
+
             </a>
-        </div>
-        <form method="POST" action="{% url 'logout' %}" style="margin-left:auto">
-        {% csrf_token %}
-        <button type="submit" class="subnav-link" style="border:none;background:none;cursor:pointer;color:#a32d2d;">
-          <i class="ti ti-logout"></i> Log out
-        </button>
-      </form>
+          </div>
+
+          <form method="POST" action="{% url 'logout' %}" class="logout-form">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn">
+              <i class="ti ti-logout"></i>
+              <span>Log out</span>
+            </button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}" class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
+            <i class="ti ti-login"></i>
+            Login
+          </a>
+        {% endif %}
       </div>
+
+      <button type="button" class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
+        <i class="ti ti-menu-2"></i>
+      </button>
+
     </div>
   </nav>
 
-  <!-- ── PAGE CONTENT ── -->
+  <!-- ─────────────────────────────
+       MOBILE MENU
+  ───────────────────────────── -->
+
+  <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+  <aside class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <div class="mobile-menu-header">
+      <div class="mobile-menu-title">
+        <div class="brand-icon">
+          <i class="ti ti-building"></i>
+        </div>
+        <span>Ghar<span style="color:var(--primary)">Khoj</span></span>
+      </div>
+
+      <button type="button" class="mobile-close-btn" id="mobileCloseBtn" aria-label="Close menu">
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+
+    <div class="mobile-menu-body">
+
+      <div class="mobile-search">
+        <i class="ti ti-search si"></i>
+        <input type="text" placeholder="Search rooms, locations...">
+      </div>
+
+      {% if user.is_authenticated %}
+        <a href="{% url 'profile' %}"
+           class="mobile-user-card {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+          <div class="nav-avatar">
+            {% if user.profile_image %}
+              <img src="{{ user.profile_image.url }}" alt="{{ user.username }}">
+            {% else %}
+              {{ user.get_full_name|default:user.username|slice:":2"|upper }}
+            {% endif %}
+          </div>
+
+          <div>
+            <div class="mobile-user-name">
+              {{ user.get_full_name|default:user.username }}
+            </div>
+            <div class="mobile-user-role">
+              {{ user.role|title }}
+            </div>
+          </div>
+        </a>
+      {% endif %}
+
+      <div class="mobile-nav-section">
+        <div class="mobile-section-label">Navigation</div>
+
+        <a href="{% url 'property_list' %}"
+           class="mobile-nav-link {% if request.resolver_match.url_name == 'property_list' or request.resolver_match.url_name == 'property_detail' %}active{% endif %}">
+          <i class="ti ti-building-community"></i>
+          Home
+        </a>
+
+        {% if user.is_authenticated and user.role == 'TENANT' %}
+          <a href="{% url 'wishlist_list' %}"
+             class="mobile-nav-link {% if request.resolver_match.url_name == 'wishlist_list' %}active{% endif %}">
+            <i class="ti ti-heart"></i>
+            Wishlist
+          </a>
+
+          <a href="#"
+             class="mobile-nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+            <i class="ti ti-message-circle"></i>
+            Reports
+          </a>
+        {% endif %}
+
+        {% if user.is_authenticated and user.role == 'LANDLORD' %}
+          <a href="{% url 'add_property' %}"
+             class="mobile-nav-link {% if request.resolver_match.url_name == 'add_property' %}active{% endif %}">
+            <i class="ti ti-calendar-check"></i>
+            Add Property
+          </a>
+
+          <a href="#"
+             class="mobile-nav-link {% if request.resolver_match.url_name == 'documents' %}active{% endif %}">
+            <i class="ti ti-file-text"></i>
+            Documents
+          </a>
+        {% endif %}
+      </div>
+
+      <div class="mobile-nav-section">
+        <div class="mobile-section-label">Account</div>
+
+        {% if user.is_authenticated %}
+          <form method="POST" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="mobile-logout-btn">
+              <i class="ti ti-logout"></i>
+              Log out
+            </button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}" class="mobile-login-btn">
+            <i class="ti ti-login"></i>
+            Login
+          </a>
+        {% endif %}
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ─────────────────────────────
+       PAGE CONTENT
+  ───────────────────────────── -->
+
   <div class="page-content">
+
     {% if messages %}
       <div id="messages-container" style="position:fixed; top:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:10px; min-width:320px; max-width:420px;">
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}" style="display:flex; align-items:flex-start; gap:12px; padding:13px 16px; border-radius:12px; border:0.5px solid; font-size:14px; line-height:1.5; position:relative; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,.08);">
-          <div style="flex:1;">{{ message }}</div>
-          <button onclick="this.closest('.alert').remove()" style="background:none; border:none; cursor:pointer; font-size:18px; opacity:.5; padding:0; line-height:1;">&times;</button>
-          <div class="msg-timer" style="position:absolute; bottom:0; left:0; height:3px; width:100%; animation:msgShrink 5s linear forwards;"></div>
-        </div>
+          <div class="alert alert-{{ message.tags }}" style="display:flex; align-items:flex-start; gap:12px; padding:13px 16px; border-radius:12px; border:0.5px solid; font-size:14px; line-height:1.5; position:relative; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,.08);">
+            <div style="flex:1;">{{ message }}</div>
+
+            <button onclick="this.closest('.alert').remove()" style="background:none; border:none; cursor:pointer; font-size:18px; opacity:.5; padding:0; line-height:1;">
+              &times;
+            </button>
+
+            <div class="msg-timer" style="position:absolute; bottom:0; left:0; height:3px; width:100%; animation:msgShrink 5s linear forwards;"></div>
+          </div>
         {% endfor %}
       </div>
     {% endif %}
+
     {% block content %}{% endblock %}
+
   </div>
 
-  <!-- ── FOOTER ── -->
+  <!-- ─────────────────────────────
+       FOOTER
+  ───────────────────────────── -->
+
   <footer>
     <div class="footer-top">
+
       <div class="footer-brand">
-        <div class="brand-icon-lg"><i class="ti ti-building"></i></div>
-        <div class="brand-name-lg">Room<span>Finder</span></div>
-        <p>Find your perfect room with ease. Connecting tenants and landlords across Nepal.</p>
+        <div class="brand-icon-lg">
+          <i class="ti ti-building"></i>
+        </div>
+
+        <div class="brand-name-lg">Ghar<span>Khoj</span></div>
+
+        <p>
+          Find your perfect room with ease. Connecting tenants and landlords across Nepal.
+        </p>
+
         <div class="footer-socials">
-          <a href="#" class="social-btn"><i class="ti ti-brand-facebook"></i></a>
-          <a href="#" class="social-btn"><i class="ti ti-brand-instagram"></i></a>
-          <a href="#" class="social-btn"><i class="ti ti-brand-twitter"></i></a>
+          <a href="#" class="social-btn">
+            <i class="ti ti-brand-facebook"></i>
+          </a>
+
+          <a href="#" class="social-btn">
+            <i class="ti ti-brand-instagram"></i>
+          </a>
+
+          <a href="#" class="social-btn">
+            <i class="ti ti-brand-twitter"></i>
+          </a>
         </div>
       </div>
+
       <div class="footer-col">
         <h4>Explore</h4>
-        <a href="#">Browse Rooms</a>
+        <a href="{% url 'property_list' %}">Browse Rooms</a>
         <a href="#">Featured Listings</a>
         <a href="#">Nearby Rooms</a>
         <a href="#">New Arrivals</a>
       </div>
+
       <div class="footer-col">
         <h4>Account</h4>
-        <a href="#">My Bookings</a>
-        <a href="#">Payment History</a>
-        <a href="#">Saved Rooms</a>
-        <a href="#">Settings</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'profile' %}">My Profile</a>
+          {% if user.role == 'TENANT' %}
+            <a href="{% url 'wishlist_list' %}">Saved Rooms</a>
+          {% endif %}
+          <a href="#">Settings</a>
+        {% else %}
+          <a href="{% url 'login' %}">Login</a>
+        {% endif %}
       </div>
+
       <div class="footer-col">
         <h4>Support</h4>
         <a href="#">Help Center</a>
@@ -246,10 +1115,13 @@
         <a href="#">Privacy Policy</a>
         <a href="#">Terms of Service</a>
       </div>
+
     </div>
+
     <div class="footer-bottom">
       <div class="footer-bottom-inner">
-        <p>&copy; {% now "Y" %} RoomFinder. All rights reserved.</p>
+        <p>&copy; {% now "Y" %} GharKhoj. All rights reserved.</p>
+
         <div class="footer-bottom-links">
           <a href="#">Privacy</a>
           <a href="#">Terms</a>
@@ -258,16 +1130,74 @@
       </div>
     </div>
   </footer>
+
   <script>
-    setTimeout(function () {
-      const container = document.getElementById('messages-container');
-      if (container) {
-        container.style.transition = 'opacity 0.5s ease';
-        container.style.opacity = '0';
-        setTimeout(() => container.remove(), 500); // remove after fade
+    const hamburgerBtn = document.getElementById("hamburgerBtn");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const mobileMenuOverlay = document.getElementById("mobileMenuOverlay");
+    const mobileCloseBtn = document.getElementById("mobileCloseBtn");
+
+    function openMobileMenu() {
+      mobileMenu.classList.add("open");
+      mobileMenuOverlay.classList.add("open");
+      document.body.classList.add("mobile-menu-open");
+
+      if (hamburgerBtn) {
+        hamburgerBtn.setAttribute("aria-expanded", "true");
       }
-    }, 5000); // 5 seconds
+
+      mobileMenu.setAttribute("aria-hidden", "false");
+    }
+
+    function closeMobileMenu() {
+      mobileMenu.classList.remove("open");
+      mobileMenuOverlay.classList.remove("open");
+      document.body.classList.remove("mobile-menu-open");
+
+      if (hamburgerBtn) {
+        hamburgerBtn.setAttribute("aria-expanded", "false");
+      }
+
+      mobileMenu.setAttribute("aria-hidden", "true");
+    }
+
+    if (hamburgerBtn) {
+      hamburgerBtn.addEventListener("click", openMobileMenu);
+    }
+
+    if (mobileCloseBtn) {
+      mobileCloseBtn.addEventListener("click", closeMobileMenu);
+    }
+
+    if (mobileMenuOverlay) {
+      mobileMenuOverlay.addEventListener("click", closeMobileMenu);
+    }
+
+    document.addEventListener("keydown", function(event) {
+      if (event.key === "Escape") {
+        closeMobileMenu();
+      }
+    });
+
+    document.querySelectorAll(".mobile-nav-link, .mobile-user-card, .mobile-login-btn").forEach(function(link) {
+      link.addEventListener("click", closeMobileMenu);
+    });
+
+    setTimeout(function () {
+      const container = document.getElementById("messages-container");
+
+      if (container) {
+        container.style.transition = "opacity 0.5s ease";
+        container.style.opacity = "0";
+
+        setTimeout(function () {
+          container.remove();
+        }, 500);
+      }
+    }, 5000);
   </script>
+
   {% block extra_js %}{% endblock %}
+
 </body>
 </html>
