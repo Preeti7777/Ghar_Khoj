@@ -18,7 +18,9 @@ class User(AbstractUser):
     role = models.CharField(
         max_length=20,
         choices=Role.choices,
-        default=Role.TENANT
+        blank=True,
+        null=True,
+        default=None
     )
 
     phone = models.CharField(max_length=15, blank=True, null=True)

@@ -1,0 +1,356 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<style>
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #0F6E56;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .review-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 18px;
+    align-items: start;
+  }
+
+  .review-card,
+  .action-card {
+    background: #fff;
+    border: 0.5px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 18px;
+  }
+
+  .review-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+
+  .review-sub {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 18px;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .info-item {
+    background: #f5f5f4;
+    border-radius: 8px;
+    padding: 11px;
+  }
+
+  .info-label {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+
+  .info-value {
+    font-size: 13px;
+    color: #1a1a1a;
+    font-weight: 700;
+    word-break: break-word;
+  }
+
+  .doc-grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .doc-box {
+    border: 0.5px solid #e5e5e5;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f5f5f4;
+  }
+
+  .doc-head {
+    padding: 11px 13px;
+    background: #fff;
+    border-bottom: 0.5px solid #e5e5e5;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .doc-img {
+    width: 100%;
+    max-height: 430px;
+    object-fit: contain;
+    background: #f5f5f4;
+    display: block;
+  }
+
+  .missing-doc {
+    padding: 36px 20px;
+    text-align: center;
+    color: #991b1b;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .action-card {
+    position: sticky;
+    top: 76px;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+
+  .status-PENDING {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .status-VERIFIED {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .status-REJECTED {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .approve-btn,
+  .reject-btn {
+    width: 100%;
+    border-radius: 8px;
+    padding: 10px 13px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .approve-btn {
+    background: #0F6E56;
+    color: #fff;
+    border: none;
+    margin-bottom: 10px;
+  }
+
+  .approve-btn:hover {
+    background: #085041;
+  }
+
+  .reject-box {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #e5e5e5;
+  }
+
+  .reject-box label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 6px;
+  }
+
+  .reject-box textarea {
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 10px;
+    font-family: inherit;
+    outline: none;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .reject-btn {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+  }
+
+  .verified-note {
+    background: #dcfce7;
+    border: 1px solid #86efac;
+    color: #166534;
+    padding: 11px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  @media(max-width: 860px) {
+    .review-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .action-card {
+      position: static;
+    }
+  }
+
+  @media(max-width: 560px) {
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<a href="{% url 'certificate_verification_list' %}" class="back-link">
+  <i class="ti ti-arrow-left"></i>
+  Back to certificate verification
+</a>
+
+<div class="review-layout">
+
+  <div class="review-card">
+    <h1 class="review-title">
+      {{ landlord.get_full_name|default:landlord.username }}
+    </h1>
+
+    <p class="review-sub">
+      Review uploaded citizenship documents before approving the landlord.
+    </p>
+
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">Username</div>
+        <div class="info-value">@{{ landlord.username }}</div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-label">Email</div>
+        <div class="info-value">{{ landlord.email|default:"Not added" }}</div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-label">Phone</div>
+        <div class="info-value">{{ landlord.phone|default:"Not added" }}</div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-label">Status</div>
+        <div class="info-value">{{ landlord.get_verification_status_display }}</div>
+      </div>
+    </div>
+
+    <div class="doc-grid">
+
+      <div class="doc-box">
+        <div class="doc-head">
+          <i class="ti ti-id"></i>
+          Citizenship Front
+        </div>
+
+        {% if landlord.citizenship_front_image %}
+          <a href="{{ landlord.citizenship_front_image.url }}" target="_blank">
+            <img src="{{ landlord.citizenship_front_image.url }}" class="doc-img" alt="Citizenship front">
+          </a>
+        {% else %}
+          <div class="missing-doc">Citizenship front image missing</div>
+        {% endif %}
+      </div>
+
+      <div class="doc-box">
+        <div class="doc-head">
+          <i class="ti ti-id"></i>
+          Citizenship Back
+        </div>
+
+        {% if landlord.citizenship_back_image %}
+          <a href="{{ landlord.citizenship_back_image.url }}" target="_blank">
+            <img src="{{ landlord.citizenship_back_image.url }}" class="doc-img" alt="Citizenship back">
+          </a>
+        {% else %}
+          <div class="missing-doc">Citizenship back image missing</div>
+        {% endif %}
+      </div>
+
+      <div class="doc-box">
+        <div class="doc-head">
+          <i class="ti ti-camera"></i>
+          Photo With Citizenship
+        </div>
+
+        {% if landlord.photo_with_citizenship %}
+          <a href="{{ landlord.photo_with_citizenship.url }}" target="_blank">
+            <img src="{{ landlord.photo_with_citizenship.url }}" class="doc-img" alt="Photo with citizenship">
+          </a>
+        {% else %}
+          <div class="missing-doc">Photo with citizenship missing</div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+  <div class="action-card">
+    <span class="status-pill status-{{ landlord.verification_status }}">
+      {{ landlord.get_verification_status_display }}
+    </span>
+
+    {% if landlord.verification_status == "VERIFIED" %}
+      <div class="verified-note">
+        <strong>Already verified.</strong><br>
+        This landlord can add properties.
+      </div>
+    {% else %}
+      <form method="POST" action="{% url 'approve_certificate' landlord.id %}">
+        {% csrf_token %}
+        <button type="submit" class="approve-btn">
+          <i class="ti ti-circle-check"></i>
+          Approve Certificate
+        </button>
+      </form>
+
+      <div class="reject-box">
+        <form method="POST" action="{% url 'reject_certificate' landlord.id %}">
+          {% csrf_token %}
+
+          <label>Reject reason</label>
+
+          <textarea
+            name="rejection_reason"
+            placeholder="Explain why this certificate verification is rejected..."
+            required
+          >{{ landlord.verification_rejection_reason }}</textarea>
+
+          <button type="submit" class="reject-btn">
+            <i class="ti ti-circle-x"></i>
+            Reject Certificate
+          </button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}

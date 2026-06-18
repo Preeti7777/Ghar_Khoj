@@ -1,15 +1,383 @@
-{% extends 'admin_base.html' %}
+{% extends "admin_base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
 {% block content %}
-<div class="page-head">
-      <h1>Overview</h1>
-      <span class="date" id="today-date"></span>
+
+<style>
+  .admin-home {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .dashboard-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .dashboard-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+
+  .dashboard-sub {
+    font-size: 13px;
+    color: #777;
+  }
+
+  .admin-panel-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: #0F6E56;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 9px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .admin-panel-btn:hover {
+    background: #085041;
+    color: #fff;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .dash-card {
+    background: #fff;
+    border: 0.5px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .dash-label {
+    font-size: 12px;
+    color: #777;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 7px;
+  }
+
+  .dash-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .dash-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .section-card {
+    background: #fff;
+    border: 0.5px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .view-all {
+    color: #0F6E56;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .review-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eeeeee;
+  }
+
+  .review-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .review-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #E1F5EE;
+    color: #0F6E56;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .review-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .review-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .review-sub {
+    font-size: 12px;
+    color: #777;
+    margin-top: 3px;
+  }
+
+  .review-action {
+    font-size: 12px;
+    color: #0F6E56;
+    text-decoration: none;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .quick-actions {
+    display: grid;
+    gap: 10px;
+  }
+
+  .quick-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-decoration: none;
+    color: #1a1a1a;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 12px;
+    background: #fff;
+  }
+
+  .quick-link:hover {
+    background: #f5f5f4;
+    color: #0F6E56;
+  }
+
+  .quick-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .quick-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #E1F5EE;
+    color: #0F6E56;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .empty-small {
+    font-size: 13px;
+    color: #777;
+  }
+
+  @media(max-width: 900px) {
+    .dashboard-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dash-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media(max-width: 520px) {
+    .dashboard-head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .admin-panel-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="admin-home">
+
+  <div class="dashboard-head">
+    <div>
+      <h1 class="dashboard-title">Admin Dashboard</h1>
+      <p class="dashboard-sub">
+        Manage property verification, landlord certificates, users, and system data.
+      </p>
     </div>
 
-    <div class="metrics">
-      <div class="metric-card">
-        <div class="metric-label"><i class="ti ti-users"></i> Total users</div>
-        <div class="metric-val">12,486</div>
-        <div class="metric-delta delta-up">↑ 8.2% this month</div>
+    <a href="{% url 'admin:index' %}" class="admin-panel-btn">
+      <i class="ti ti-settings"></i>
+      Open Django Admin
+    </a>
+  </div>
+
+  <div class="dashboard-grid">
+    <div class="dash-card">
+      <div class="dash-label">
+        <i class="ti ti-users"></i>
+        Total Users
+      </div>
+      <div class="dash-value">{{ total_users }}</div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-label">
+        <i class="ti ti-home"></i>
+        Properties
+      </div>
+      <div class="dash-value">{{ total_properties }}</div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-label">
+        <i class="ti ti-building-check"></i>
+        Pending Properties
+      </div>
+      <div class="dash-value">{{ property_pending_count }}</div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-label">
+        <i class="ti ti-id"></i>
+        Pending Certificates
+      </div>
+      <div class="dash-value">{{ certificate_pending_count }}</div>
+    </div>
+  </div>
+
+  <div class="dash-layout">
+
+    <div>
+      <div class="section-card">
+        <div class="section-title">
+          Pending Property Reviews
+          <a href="{% url 'verification_list' %}" class="view-all">View all</a>
+        </div>
+
+        {% for prop in pending_properties %}
+          <div class="review-item">
+            <div class="review-icon">
+              <i class="ti ti-building"></i>
+            </div>
+
+            <div class="review-main">
+              <div class="review-title">{{ prop.title }}</div>
+              <div class="review-sub">
+                {{ prop.owner.get_full_name|default:prop.owner.username }} · Rs {{ prop.monthly_rent|floatformat:0 }}/mo
+              </div>
+            </div>
+
+            <a href="{% url 'verification_detail' prop.id %}" class="review-action">
+              Review
+            </a>
+          </div>
+        {% empty %}
+          <p class="empty-small">No pending property reviews.</p>
+        {% endfor %}
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">
+          Pending Certificate Reviews
+          <a href="{% url 'certificate_verification_list' %}" class="view-all">View all</a>
+        </div>
+
+        {% for landlord in pending_certificates %}
+          <div class="review-item">
+            <div class="review-icon">
+              <i class="ti ti-id"></i>
+            </div>
+
+            <div class="review-main">
+              <div class="review-title">
+                {{ landlord.get_full_name|default:landlord.username }}
+              </div>
+              <div class="review-sub">
+                {{ landlord.email|default:"No email" }}
+              </div>
+            </div>
+
+            <a href="{% url 'certificate_verification_detail' landlord.id %}" class="review-action">
+              Review
+            </a>
+          </div>
+        {% empty %}
+          <p class="empty-small">No pending certificate reviews.</p>
+        {% endfor %}
       </div>
     </div>
-    {% endblock %}
+
+    <div>
+      <div class="section-card">
+        <div class="section-title">Quick Actions</div>
+
+        <div class="quick-actions">
+          <a href="{% url 'admin:index' %}" class="quick-link">
+            <div class="quick-left">
+              <span class="quick-icon"><i class="ti ti-settings"></i></span>
+              <span>Django Admin Panel</span>
+            </div>
+            <i class="ti ti-chevron-right"></i>
+          </a>
+
+          <a href="{% url 'verification_list' %}" class="quick-link">
+            <div class="quick-left">
+              <span class="quick-icon"><i class="ti ti-building-check"></i></span>
+              <span>Property Verification</span>
+            </div>
+            <i class="ti ti-chevron-right"></i>
+          </a>
+
+          <a href="{% url 'certificate_verification_list' %}" class="quick-link">
+            <div class="quick-left">
+              <span class="quick-icon"><i class="ti ti-id"></i></span>
+              <span>Certificate Verification</span>
+            </div>
+            <i class="ti ti-chevron-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

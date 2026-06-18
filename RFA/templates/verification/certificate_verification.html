@@ -1,0 +1,378 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <h1>Certificate Verification</h1>
+    <div class="date">Review landlord citizenship verification requests</div>
+  </div>
+</div>
+
+<div class="metrics">
+  <div class="metric-card">
+    <div class="metric-label">
+      <i class="ti ti-users"></i>
+      Total
+    </div>
+    <div class="metric-val">{{ stats.total }}</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">
+      <i class="ti ti-clock"></i>
+      Pending
+    </div>
+    <div class="metric-val">{{ stats.pending }}</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">
+      <i class="ti ti-circle-check"></i>
+      Verified
+    </div>
+    <div class="metric-val">{{ stats.verified }}</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">
+      <i class="ti ti-circle-x"></i>
+      Rejected
+    </div>
+    <div class="metric-val">{{ stats.rejected }}</div>
+  </div>
+</div>
+
+<style>
+  .filter-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .filter-tab {
+    text-decoration: none;
+    border: 1px solid #e5e5e5;
+    background: #ffffff;
+    color: #555;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .filter-tab:hover {
+    background: #f5f5f4;
+    color: #0F6E56;
+  }
+
+  .filter-tab.active {
+    background: #EEEDFE;
+    color: #0F6E56;
+    border-color: #d8d4ff;
+  }
+
+  .admin-card {
+    background: #ffffff;
+    border: 0.5px solid #e5e5e5;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 13px 15px;
+    border-bottom: 1px solid #eeeeee;
+    text-align: left;
+    font-size: 13px;
+    vertical-align: middle;
+  }
+
+  .admin-table th {
+    background: #fafafa;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #888;
+    font-weight: 700;
+  }
+
+  .admin-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .landlord-name {
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .muted {
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .status-PENDING {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .status-VERIFIED {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .status-REJECTED {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .status-NOT_SUBMITTED {
+    background: #f3f4f6;
+    color: #6b7280;
+  }
+
+  .doc-state {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .doc-chip {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 999px;
+  }
+
+  .doc-chip.ok {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .doc-chip.missing {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .review-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #0F6E56;
+    color: #fff;
+    text-decoration: none;
+    padding: 7px 11px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .review-btn:hover {
+    background: #085041;
+    color: #fff;
+  }
+
+  .empty-box {
+    padding: 42px 20px;
+    text-align: center;
+    color: #888;
+    font-size: 13px;
+  }
+
+  .pagination-wrap {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .page-btn {
+    text-decoration: none;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    color: #555;
+    padding: 7px 11px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .page-btn:hover {
+    background: #f5f5f4;
+    color: #0F6E56;
+  }
+
+  .page-current {
+    background: #EEEDFE;
+    color: #0F6E56;
+    border-color: #d8d4ff;
+  }
+
+  @media(max-width: 780px) {
+    .admin-table,
+    .admin-table thead,
+    .admin-table tbody,
+    .admin-table tr,
+    .admin-table th,
+    .admin-table td {
+      display: block;
+    }
+
+    .admin-table thead {
+      display: none;
+    }
+
+    .admin-table tr {
+      padding: 13px;
+      border-bottom: 1px solid #eeeeee;
+    }
+
+    .admin-table td {
+      border-bottom: none;
+      padding: 5px 0;
+    }
+  }
+</style>
+
+<div class="filter-tabs">
+  <a href="?status=all"
+     class="filter-tab {% if status_filter == 'all' %}active{% endif %}">
+    All {{ stats.total }}
+  </a>
+
+  <a href="?status=PENDING"
+     class="filter-tab {% if status_filter == 'PENDING' %}active{% endif %}">
+    Pending {{ stats.pending }}
+  </a>
+
+  <a href="?status=VERIFIED"
+     class="filter-tab {% if status_filter == 'VERIFIED' %}active{% endif %}">
+    Verified {{ stats.verified }}
+  </a>
+
+  <a href="?status=REJECTED"
+     class="filter-tab {% if status_filter == 'REJECTED' %}active{% endif %}">
+    Rejected {{ stats.rejected }}
+  </a>
+
+  <a href="?status=NOT_SUBMITTED"
+     class="filter-tab {% if status_filter == 'NOT_SUBMITTED' %}active{% endif %}">
+    Not Submitted {{ stats.not_submitted }}
+  </a>
+</div>
+
+<div class="admin-card">
+  {% if page_obj %}
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Landlord</th>
+          <th>Contact</th>
+          <th>Documents</th>
+          <th>Status</th>
+          <th>Joined</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for landlord in page_obj %}
+          <tr>
+            <td>
+              <div class="landlord-name">
+                {{ landlord.get_full_name|default:landlord.username }}
+              </div>
+              <div class="muted">@{{ landlord.username }}</div>
+            </td>
+
+            <td>
+              <div>{{ landlord.email|default:"No email" }}</div>
+              <div class="muted">{{ landlord.phone|default:"No phone" }}</div>
+            </td>
+
+            <td>
+              <div class="doc-state">
+                {% if landlord.citizenship_front_image %}
+                  <span class="doc-chip ok">Front</span>
+                {% else %}
+                  <span class="doc-chip missing">Front</span>
+                {% endif %}
+
+                {% if landlord.citizenship_back_image %}
+                  <span class="doc-chip ok">Back</span>
+                {% else %}
+                  <span class="doc-chip missing">Back</span>
+                {% endif %}
+
+                {% if landlord.photo_with_citizenship %}
+                  <span class="doc-chip ok">Photo</span>
+                {% else %}
+                  <span class="doc-chip missing">Photo</span>
+                {% endif %}
+              </div>
+            </td>
+
+            <td>
+              <span class="status-pill status-{{ landlord.verification_status }}">
+                {{ landlord.get_verification_status_display }}
+              </span>
+            </td>
+
+            <td>
+              {{ landlord.date_joined|date:"M d, Y" }}
+            </td>
+
+            <td>
+              <a href="{% url 'certificate_verification_detail' landlord.id %}" class="review-btn">
+                <i class="ti ti-eye"></i>
+                Review
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-box">
+      No certificate verification records found.
+    </div>
+  {% endif %}
+</div>
+
+{% if page_obj.has_other_pages %}
+  <div class="pagination-wrap">
+    {% if page_obj.has_previous %}
+      <a href="?status={{ status_filter }}&page={{ page_obj.previous_page_number }}" class="page-btn">
+        Previous
+      </a>
+    {% endif %}
+
+    <span class="page-btn page-current">
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+      <a href="?status={{ status_filter }}&page={{ page_obj.next_page_number }}" class="page-btn">
+        Next
+      </a>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% endblock %}

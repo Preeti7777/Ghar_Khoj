@@ -47,7 +47,7 @@ def login_view(request):
             login(request, user)
 
             if user.is_staff:
-                return redirect('admin_dashboard')
+                return redirect('admin_profile')
             else:
                 return redirect('property_list')
 
@@ -61,55 +61,78 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('property_list')
 
 
 @login_required
 def profile_view(request):
-    user = request.user
+    profile_user = request.user
+
     if request.method == "POST":
         form = ProfileUpdateForm(
             request.POST,
             request.FILES,
-            instance=user
+            instance=profile_user
         )
 
         if form.is_valid():
             form.save()
             messages.success(request, "Profile updated successfully.")
             return redirect("profile")
-        else:
-            messages.error(request, "Please fix the errors below.")
+
+        messages.error(request, "Please fix the errors below.")
     else:
-        form = ProfileUpdateForm(instance=user)
+        form = ProfileUpdateForm(instance=profile_user)
+
     my_properties = (
         Property.objects
-        .filter(owner=user)
+        .filter(owner=profile_user)
         .prefetch_related("images", "facility")
         .order_by("-created_at")
     )
 
-    approved_count = my_properties.filter(status="approved").count()
-    pending_count = my_properties.filter(status="pending").count()
-    rejected_count = my_properties.filter(status="rejected").count()
-
     wishlist_items = (
         Wishlist.objects
-        .filter(user=user)
+        .filter(user=profile_user)
         .select_related("property")
         .prefetch_related("property__images")
         .order_by("-created_at")
     )
 
+    all_properties = Property.objects.all()
+    landlord_users = User.objects.filter(role="LANDLORD")
+    tenant_users = User.objects.filter(role="TENANT")
+
+    pending_certificates = landlord_users.filter(
+        verification_status="PENDING"
+    )
+
     context = {
-        "profile_user": user,
+        "profile_user": profile_user,
+        "form": form,
+
+        # Landlord data
         "my_properties": my_properties[:5],
-        "approved_count": approved_count,
-        "pending_count": pending_count,
-        "rejected_count": rejected_count,
         "total_listings": my_properties.count(),
+        "approved_count": my_properties.filter(status="approved").count(),
+        "pending_count": my_properties.filter(status="pending").count(),
+        "rejected_count": my_properties.filter(status="rejected").count(),
+
+        # Tenant data
         "wishlist_items": wishlist_items[:5],
         "wishlist_count": wishlist_items.count(),
+
+        # Admin/staff data
+        "total_users": User.objects.count(),
+        "total_landlords": landlord_users.count(),
+        "total_tenants": tenant_users.count(),
+        "total_properties": all_properties.count(),
+        "property_pending_count": all_properties.filter(status="pending").count(),
+        "property_approved_count": all_properties.filter(status="approved").count(),
+        "property_rejected_count": all_properties.filter(status="rejected").count(),
+        "certificate_pending_count": pending_certificates.count(),
+        "recent_pending_properties": all_properties.filter(status="pending").select_related("owner").order_by("-created_at")[:5],
+        "recent_pending_certificates": pending_certificates.order_by("-date_joined")[:5],
     }
 
     return render(request, "accounts/profile.html", {**context, "form": form})

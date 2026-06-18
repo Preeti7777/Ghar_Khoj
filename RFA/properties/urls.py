@@ -6,7 +6,7 @@ from . import views
 urlpatterns = [
 
     path(
-        'list/',
+        '',
         views.property_list,
         name='property_list'
     ),

@@ -1,3 +1,5 @@
+from datetime import timezone
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
@@ -6,7 +8,8 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from properties.models import Property
-
+from accounts.models import User
+from django.utils import timezone
 
 @staff_member_required
 def verification_list(request):
@@ -81,43 +84,113 @@ def reject_property(request, pk):
     messages.success(request, f'"{property.title}" has been rejected.')
     return redirect("verification_list")
 
+@staff_member_required
+def certificate_verification_list(request):
+    status_filter = request.GET.get("status", "PENDING")
 
-# @staff_member_required
-# @require_POST
-# def bulk_action(request):
-#     action = request.POST.get("action")
-#     ids = request.POST.getlist("property_ids")
-#     valid_actions = ("approve", "reject")
+    landlords = User.objects.filter(
+        role="LANDLORD"
+    ).order_by("-date_joined")
 
-#     if action not in valid_actions or not ids:
-#         messages.error(
-#             request, "Invalid bulk action or no properties selected.")
-#         return redirect("verification_list")
+    if status_filter in ("NOT_SUBMITTED", "PENDING", "VERIFIED", "REJECTED"):
+        landlords = landlords.filter(verification_status=status_filter)
 
-#     new_status = "approved" if action == "approve" else "rejected"
-#     updated = Property.objects.filter(pk__in=ids).update(
-#         status=new_status,
-#         reviewed_by=request.user,
-#     )
+    paginator = Paginator(landlords, 20)
+    page = paginator.get_page(request.GET.get("page"))
 
-#     messages.success(
-#         request, f"{updated} propert{'y' if updated == 1 else 'ies'} {new_status}.")
-#     return redirect("verification_list")
+    all_landlords = User.objects.filter(role="LANDLORD")
 
+    stats = {
+        "total": all_landlords.count(),
+        "not_submitted": all_landlords.filter(verification_status="NOT_SUBMITTED").count(),
+        "pending": all_landlords.filter(verification_status="PENDING").count(),
+        "verified": all_landlords.filter(verification_status="VERIFIED").count(),
+        "rejected": all_landlords.filter(verification_status="REJECTED").count(),
+    }
 
-# ── Landlord-facing views ─────────────────────────────────────────────────────
+    return render(request, "verification/certificate_verification.html", {
+        "page_obj": page,
+        "status_filter": status_filter,
+        "stats": stats,
+    })
 
-# @login_required
-# def my_properties(request):
-#     properties = Property.objects.filter(owner=request.user).order_by("-created_at")
-#     return render(request, "admin_panel/my_properties.html", {
-#         "properties": properties,
-#     })
+@staff_member_required
+def certificate_verification_detail(request, user_id):
+    landlord = get_object_or_404(
+        User,
+        pk=user_id,
+        role="LANDLORD"
+    )
 
+    return render(request, "verification/certificate_verification_detail.html", {
+        "landlord": landlord,
+    })
 
-# @login_required
-# def my_property_detail(request, pk):
-#     property = get_object_or_404(Property, pk=pk, owner=request.user)
-#     return render(request, "admin_panel/my_property_detail.html", {
-#         "property": property,
-#     })
+@staff_member_required
+@require_POST
+def approve_certificate(request, user_id):
+    landlord = get_object_or_404(
+        User,
+        pk=user_id,
+        role="LANDLORD"
+    )
+
+    if landlord.verification_status == "VERIFIED":
+        messages.info(request, f"{landlord.username} is already verified.")
+        return redirect("certificate_verification_detail", user_id=user_id)
+
+    if not landlord.has_submitted_verification_docs():
+        messages.error(
+            request,
+            "Cannot approve. Required certificate documents are missing."
+        )
+        return redirect("certificate_verification_detail", user_id=user_id)
+
+    landlord.verification_status = "VERIFIED"
+    landlord.verification_rejection_reason = ""
+    landlord.verified_at = timezone.now()
+
+    landlord.save(update_fields=[
+        "verification_status",
+        "verification_rejection_reason",
+        "verified_at",
+    ])
+
+    messages.success(
+        request,
+        f"{landlord.username}'s certificate has been approved."
+    )
+
+    return redirect("certificate_verification_list")
+
+@staff_member_required
+@require_POST
+def reject_certificate(request, user_id):
+    landlord = get_object_or_404(
+        User,
+        pk=user_id,
+        role="LANDLORD"
+    )
+
+    reason = request.POST.get("rejection_reason", "").strip()
+
+    if not reason:
+        messages.error(request, "Please provide a rejection reason.")
+        return redirect("certificate_verification_detail", user_id=user_id)
+
+    landlord.verification_status = "REJECTED"
+    landlord.verification_rejection_reason = reason
+    landlord.verified_at = None
+
+    landlord.save(update_fields=[
+        "verification_status",
+        "verification_rejection_reason",
+        "verified_at",
+    ])
+
+    messages.success(
+        request,
+        f"{landlord.username}'s certificate has been rejected."
+    )
+
+    return redirect("certificate_verification_list")
