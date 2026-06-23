@@ -1,5 +1,5 @@
 from django.db import models
-
+from cloudinary.models import CloudinaryField
 
 class Advertisement(models.Model):
     AD_TYPE_CHOICES = [
@@ -18,7 +18,13 @@ class Advertisement(models.Model):
     description = models.TextField(blank=True, null=True)
 
     image = models.ImageField(upload_to='advertisements/', blank=True, null=True)
-    video_url = models.URLField(blank=True, null=True)
+    video = CloudinaryField(
+        'video',
+        resource_type='video',
+        folder='advertisements/videos',
+        blank=True,
+        null=True
+    )
 
     link = models.URLField(blank=True, null=True)
 

@@ -830,6 +830,15 @@
 button.phone-number {
     appearance: none;
 }
+.reward-body img,
+.reward-video {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 13px;
+    margin-bottom: 14px;
+    display: block;
+}
 </style>
 
 <div class="property-page">
@@ -1256,7 +1265,12 @@ button.phone-number {
 
         <div class="reward-body">
             {% if phone_reveal_ad %}
-                {% if phone_reveal_ad.image %}
+                {% if phone_reveal_ad.video %}
+                    <video class="reward-video" autoplay muted playsinline controls>
+                        <source src="{{ phone_reveal_ad.video.url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                {% elif phone_reveal_ad.image %}
                     <img src="{{ phone_reveal_ad.image.url }}" alt="{{ phone_reveal_ad.title }}">
                 {% endif %}
 

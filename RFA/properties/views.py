@@ -175,6 +175,15 @@ def property_list(request):
             user=request.user
         ).values_list("property_id", flat=True)
 
+    # Homepage banner ads
+    home_top_ads = get_active_ads(
+        "homepage_top",
+    )
+
+    between_card_ads = list(get_active_ads(
+        "homepage_between_cards"
+    ))
+
     context = {
         "properties": properties,
         "wishlist_ids": wishlist_ids,
@@ -208,6 +217,9 @@ def property_list(request):
             .distinct()
             .order_by("district")
         ),
+
+        "home_top_ads": home_top_ads,
+        "between_card_ads": between_card_ads,
     }
 
     return render(request, "properties/property_list.html", context)
