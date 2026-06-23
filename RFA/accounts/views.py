@@ -1,31 +1,51 @@
-from django.shortcuts import render, redirect
+import random
+from django.conf import settings
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from properties.models import Property, Wishlist
-from .models import User
+from .models import User,EmailOTP
+from django.core.mail import send_mail
 from .forms import ProfileUpdateForm, UserRegistrationForm, LoginForm, VerificationUploadForm
 
 
 def register_view(request):
-
     if request.method == 'POST':
-
         form = UserRegistrationForm(
             request.POST,
             request.FILES
         )
 
         if form.is_valid():
+            user = form.save(commit=False)
+            user.email_verified = False
+            user.is_active = False
+            user.save()
 
-            user = form.save()
+            otp = str(random.randint(100000, 999999))
+
+            EmailOTP.objects.update_or_create(
+                user=user,
+                defaults={'otp': otp}
+            )
+
+            send_mail(
+                subject="Verify your email",
+                message=f"Your OTP code is {otp}. It will expire in 5 minutes.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+
+            request.session['verify_user_id'] = user.id
 
             messages.success(
                 request,
-                "Account created successfully."
+                "Account created successfully. Please verify your email."
             )
 
-            return redirect('login')
+            return redirect('verify_email_otp')
 
     else:
         form = UserRegistrationForm()
@@ -50,6 +70,16 @@ def login_view(request):
                 return redirect('profile')
             else:
                 return redirect('property_list')
+
+        elif getattr(form, "inactive_user", None):
+            request.session['verify_user_id'] = form.inactive_user.id
+
+            messages.error(
+                request,
+                "Please verify your email before logging in."
+            )
+
+            return redirect('verify_email_otp')
 
     else:
         form = LoginForm()
@@ -180,3 +210,43 @@ def verify_account_view(request):
         "form": form,
         "profile_user": request.user,
     })
+
+def verify_email_otp(request):
+    user_id = request.session.get('verify_user_id')
+
+    if not user_id:
+        messages.error(request, "Verification session expired. Please register again.")
+        return redirect('register')
+
+    user = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST':
+        entered_otp = request.POST.get('otp')
+
+        try:
+            otp_obj = EmailOTP.objects.get(user=user)
+        except EmailOTP.DoesNotExist:
+            messages.error(request, "OTP not found. Please register again.")
+            return redirect('register')
+
+        if otp_obj.is_expired():
+            otp_obj.delete()
+            messages.error(request, "OTP expired. Please register again.")
+            return redirect('register')
+
+        if otp_obj.otp != entered_otp:
+            messages.error(request, "Invalid OTP.")
+            return redirect('verify_email_otp')
+
+        user.email_verified = True
+        user.is_active = True
+        user.save()
+
+        otp_obj.delete()
+
+        request.session.pop('verify_user_id', None)
+
+        messages.success(request, "Email verified successfully. You can now login.")
+        return redirect('login')
+
+    return render(request, 'accounts/verify_email_otp.html')

@@ -19,4 +19,9 @@ urlpatterns = [
         ),
         name="change_password"
     ),
+    path(
+        'verify-email/',
+        views.verify_email_otp,
+        name='verify_email_otp'
+    ),
 ]

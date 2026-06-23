@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.html import format_html
 
-from .models import User
+from .models import User,EmailOTP
 
 
 @admin.register(User)
@@ -98,3 +98,5 @@ class CustomUserAdmin(UserAdmin):
     citizenship_front_preview.short_description = "Citizenship Front Preview"
     citizenship_back_preview.short_description = "Citizenship Back Preview"
     photo_with_citizenship_preview.short_description = "Photo With Citizenship Preview"
+
+admin.site.register(EmailOTP)

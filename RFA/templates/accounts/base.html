@@ -310,6 +310,83 @@
             .auth-wrapper { width: 100%; border-radius: 0; min-height: 100vh; }
             .auth-right { padding: 40px 28px; }
         }
+
+        /* flash message */
+        .flash {
+      padding: 11px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .flash-success {
+      background: var(--primary-soft);
+      color: var(--primary);
+      border: 1px solid #b2d8c8;
+    }
+
+    .flash-error {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid #f5c6c6;
+    }
+
+    .flash-info {
+      background: #e8f4fd;
+      color: #185fa5;
+      border: 1px solid #b5d4f4;
+    }
+
+    .alert-success {
+      background:#f0fdf4;
+      border-color:#86efac;
+      color:#166534;
+    }
+
+    .alert-success .msg-timer {
+      background:#16a34a;
+      opacity:.4;
+    }
+
+    .alert-error,
+    .alert-danger {
+      background:#fef2f2;
+      border-color:#fca5a5;
+      color:#991b1b;
+    }
+
+    .alert-error .msg-timer,
+    .alert-danger .msg-timer {
+      background:#dc2626;
+      opacity:.4;
+    }
+
+    .alert-warning {
+      background:#fffbeb;
+      border-color:#fcd34d;
+      color:#92400e;
+    }
+
+    .alert-warning .msg-timer {
+      background:#d97706;
+      opacity:.4;
+    }
+
+    .alert-info {
+      background:#eff6ff;
+      border-color:#93c5fd;
+      color:#1e40af;
+    }
+
+    .alert-info .msg-timer {
+      background:#2563eb;
+      opacity:.4;
+    }
+
+    @keyframes msgShrink {
+      from { width:100%; }
+      to { width:0%; }
+    }
     </style>
 </head>
 <body>
@@ -346,6 +423,21 @@
 
     <!-- RIGHT PANEL -->
     <div class="auth-right">
+        {% if messages %}
+        <div id="messages-container" style="position:fixed; top:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:10px; min-width:320px; max-width:420px;">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" style="display:flex; align-items:flex-start; gap:12px; padding:13px 16px; border-radius:12px; border:0.5px solid; font-size:14px; line-height:1.5; position:relative; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,.08);">
+                <div style="flex:1;">{{ message }}</div>
+
+                <button onclick="this.closest('.alert').remove()" style="background:none; border:none; cursor:pointer; font-size:18px; opacity:.5; padding:0; line-height:1;">
+                &times;
+                </button>
+
+                <div class="msg-timer" style="position:absolute; bottom:0; left:0; height:3px; width:100%; animation:msgShrink 5s linear forwards;"></div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% block content %}
         {% endblock %}
     </div>
@@ -395,6 +487,19 @@ document.querySelectorAll('.input-wrap input').forEach(function(inp) {
         if (icon) icon.style.color = '#94a89f';
     });
 });
+
+    setTimeout(function () {
+      const container = document.getElementById("messages-container");
+
+      if (container) {
+        container.style.transition = "opacity 0.5s ease";
+        container.style.opacity = "0";
+
+        setTimeout(function () {
+          container.remove();
+        }, 500);
+      }
+    }, 5000);
 </script>
 
 </body>

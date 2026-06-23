@@ -33,16 +33,27 @@ class LoginForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput)
 
+    inactive_user = None
+
     def clean(self):
         cleaned_data = super().clean()
 
         email = cleaned_data.get("email")
         password = cleaned_data.get("password")
 
+        if not email or not password:
+            return cleaned_data
+
         try:
             user_obj = User.objects.get(email=email)
         except User.DoesNotExist:
             raise forms.ValidationError("Invalid email or password.")
+
+        if not user_obj.is_active:
+            self.inactive_user = user_obj
+            raise forms.ValidationError(
+                "Your account is not active. Please verify your email first."
+            )
 
         user = authenticate(
             username=user_obj.username,

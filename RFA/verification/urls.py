@@ -22,7 +22,6 @@ urlpatterns = [
      views.certificate_verification_detail,
      name="certificate_verification_detail"
      ),
-
      path(
      "certificate-verification/<int:user_id>/approve/",
      views.approve_certificate,
