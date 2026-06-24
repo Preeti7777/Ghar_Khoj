@@ -810,7 +810,45 @@
         padding: 16px 18px;
       }
     }
+    /* Search */
+    .mobile-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 8px 10px 8px 14px;
+  width: 100%;
+}
 
+.mobile-search i {
+  color: #6b7280;
+  font-size: 18px;
+}
+
+.mobile-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
+}
+
+.mobile-search-btn {
+  border: none;
+  background: #0F6E56;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mobile-search-btn:hover {
+  background: #085041;
+}
     {% block extra_css %}{% endblock %}
   </style>
 </head>
@@ -831,10 +869,15 @@
         <span class="brand-name">Ghar<span>Khoj</span></span>
       </a>
 
-      <div class="desktop-search">
-        <i class="ti ti-search si"></i>
-        <input type="text" placeholder="Search rooms, locations...">
-      </div>
+      <form method="GET" action="{% url 'property_list' %}" class="mobile-search">
+          <i class="ti ti-search si"></i>
+          <input
+              type="text"
+              name="q"
+              value="{{ search_query|default:'' }}"
+              placeholder="Search rooms,locations..."
+          >
+      </form>
 
       <div class="desktop-nav">
         <a href="{% url 'property_list' %}"
@@ -941,10 +984,15 @@
 
     <div class="mobile-menu-body">
 
-      <div class="mobile-search">
-        <i class="ti ti-search si"></i>
-        <input type="text" placeholder="Search rooms, locations...">
-      </div>
+      <form method="GET" action="{% url 'property_list' %}" class="mobile-search">
+          <i class="ti ti-search si"></i>
+          <input
+              type="text"
+              name="q"
+              value="{{ search_query|default:'' }}"
+              placeholder="Search rooms,locations..."
+          >
+      </form>
 
       {% if user.is_authenticated %}
         <a href="{% url 'profile' %}"

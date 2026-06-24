@@ -9,7 +9,7 @@ from .models import Property, PropertyImage, Facility, Wishlist
 from .forms import FacilityForm, PropertyForm
 from .location_data import NEPAL_PROVINCES_DISTRICTS
 from advertisements.utils import get_active_ads, get_phone_reveal_ad
-
+from django.db.models import Q
 @login_required
 def add_property(request):
     # Only landlords can add properties
@@ -125,6 +125,18 @@ def property_list(request):
     city = request.GET.get("city")
     min_rent = request.GET.get("min_rent")
     max_rent = request.GET.get("max_rent")
+    search_query = request.GET.get("q")
+
+    if search_query:
+        properties = properties.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(property_type__icontains=search_query) |
+            Q(province__icontains=search_query) |
+            Q(district__icontains=search_query) |
+            Q(city__icontains=search_query) |
+            Q(area__icontains=search_query)
+        )
 
     if property_type:
         properties = properties.filter(property_type=property_type)
@@ -176,9 +188,7 @@ def property_list(request):
         ).values_list("property_id", flat=True)
 
     # Homepage banner ads
-    home_top_ads = get_active_ads(
-        "homepage_top",
-    )
+    home_top_ads = get_active_ads("homepage_top")
 
     between_card_ads = list(get_active_ads(
         "homepage_between_cards"
@@ -196,6 +206,7 @@ def property_list(request):
         "selected_city": city,
         "selected_min_rent": min_rent,
         "selected_max_rent": max_rent,
+        "search_query": search_query,
 
         "facility_filters": {
             facility: request.GET.get(facility)
