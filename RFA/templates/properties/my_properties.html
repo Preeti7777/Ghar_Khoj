@@ -256,12 +256,71 @@
             </td>
 
             <td>
-              <div class="actions-cell">
-                <a href="{% url 'property_detail' property.pk %}"
-                   class="btn-icon btn-icon-view" title="View">
-                  <i class="ti ti-eye"></i>
-                </a>
-              </div>
+                <div class="actions-cell">
+
+                    {% if property.status == "rejected" %}
+                    <button
+                        type="button"
+                        class="btn-icon btn-icon-view"
+                        title="Property rejected"
+                        onclick="document.getElementById('rejected-modal-{{ property.pk }}').style.display='flex'"
+                    >
+                        <i class="ti ti-eye"></i>
+                    </button>
+
+                    <!-- Rejected modal -->
+                    <div
+                        id="rejected-modal-{{ property.pk }}"
+                        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4);
+                            z-index:9999; align-items:center; justify-content:center;"
+                        onclick="if(event.target===this) this.style.display='none'"
+                    >
+                        <div style="background:#fff; border-radius:14px; padding:28px 24px;
+                                    max-width:380px; width:90%; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,.15);">
+                        <div style="width:52px; height:52px; background:#fee2e2; border-radius:50%;
+                                    display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                            <i class="ti ti-ban" style="font-size:24px; color:#991b1b;"></i>
+                        </div>
+                        <h4 style="font-size:1rem; font-weight:700; color:#1a1a2e; margin-bottom:8px;">
+                            Property Rejected
+                        </h4>
+                        <p style="font-size:.85rem; color:#6b7280; margin-bottom:6px;">
+                            This property has been rejected by the admin and cannot be viewed publicly.
+                        </p>
+                        {% if property.rejection_reason %}
+                        <p style="font-size:.8rem; color:#991b1b; background:#fee2e2;
+                                    border-radius:8px; padding:8px 12px; margin:12px 0 0;">
+                            <strong>Reason:</strong> {{ property.rejection_reason }}
+                        </p>
+                        {% endif %}
+                        <button
+                            onclick="document.getElementById('rejected-modal-{{ property.pk }}').style.display='none'"
+                            style="margin-top:20px; padding:9px 24px; background:#1a1a2e; color:#fff;
+                                border:none; border-radius:8px; font-size:.85rem; font-weight:600; cursor:pointer;">
+                            Close
+                        </button>
+                        </div>
+                    </div>
+
+                    {% else %}
+                    <a href="{% url 'property_detail' property.pk %}"
+                        class="btn-icon btn-icon-view" title="View">
+                        <i class="ti ti-eye"></i>
+                    </a>
+                    {% endif %}
+
+                    <a href="{% url 'edit_property' property.pk %}" class="btn-icon btn-icon-edit" title="Edit">
+                    <i class="ti ti-edit"></i>
+                    </a>
+                    <form method="post" action="{% url 'delete_property' property.pk %}"
+                            onsubmit="return confirm('Are you sure you want to delete this property? This cannot be undone.');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-icon btn-icon-del" title="Delete">
+                            <i class="ti ti-trash"></i>
+                        </button>
+                    </form>
+
+                </div>
             </td>
 
           </tr>

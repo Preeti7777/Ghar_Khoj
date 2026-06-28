@@ -26,40 +26,29 @@ class PropertyForm(forms.ModelForm):
     class Meta:
         model = Property
         fields = [
-            "title",
-            "description",
-            "property_type",
-            "province",
-            "district",
-            "city",
-            "area",
-            "ward_number",
-            "latitude",
-            "longitude",
-            "monthly_rent",
-            "security_deposit",
-            "available_date",
-            "rules",
-            "lalpurja_image",
+            "title", "description", "property_type", "province", "district",
+            "city", "area", "ward_number", "latitude", "longitude",
+            "monthly_rent", "security_deposit", "available_date",
+            "rules", "lalpurja_image",
         ]
 
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
+    # __init__ belongs to PropertyForm, NOT inside Meta
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-            selected_province = None
+        selected_province = None
 
-            if self.is_bound:
-                selected_province = self.data.get("province")
-            elif self.instance and self.instance.pk:
-                selected_province = self.instance.province
+        if self.is_bound:
+            selected_province = self.data.get("province")
+        elif self.instance and self.instance.pk:
+            selected_province = self.instance.province
 
-            if selected_province in NEPAL_PROVINCES_DISTRICTS:
-                self.fields["district"].choices = [("", "Select district")] + [
-                    (district, district)
-                    for district in NEPAL_PROVINCES_DISTRICTS[selected_province]
-                ]
-            else:
-                self.fields["district"].choices = [("", "Select district")]
+        if selected_province in NEPAL_PROVINCES_DISTRICTS:
+            self.fields["district"].choices = [("", "Select district")] + [
+                (d, d) for d in NEPAL_PROVINCES_DISTRICTS[selected_province]
+            ]
+        else:
+            self.fields["district"].choices = [("", "Select district")]
 
 
 class FacilityForm(ModelForm):

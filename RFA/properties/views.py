@@ -383,3 +383,72 @@ def my_properties(request):
             "properties": properties
         }
     )
+
+@login_required
+def edit_property(request, pk):
+    property_obj = get_object_or_404(Property, pk=pk, owner=request.user)
+    facility_obj, _ = Facility.objects.get_or_create(property=property_obj)
+
+    if request.method == "POST":
+        form = PropertyForm(request.POST, request.FILES, instance=property_obj)
+        facility_form = FacilityForm(request.POST, instance=facility_obj)
+
+        if form.is_valid() and facility_form.is_valid():
+            prop = form.save(commit=False)
+            prop.status = "pending"
+            prop.save()
+
+            facility_form.save()
+
+            # ① Delete images the landlord removed
+            delete_ids = request.POST.get("delete_images", "")
+            if delete_ids:
+                for img_id in delete_ids.split(","):
+                    img_id = img_id.strip()
+                    if img_id.isdigit():
+                        PropertyImage.objects.filter(
+                            pk=int(img_id),
+                            property=prop
+                        ).delete()
+
+            # ② Save any newly uploaded images
+            new_images = request.FILES.getlist("images")
+            for image in new_images:
+                PropertyImage.objects.create(
+                    property=prop,
+                    image=image,
+                    is_primary=False
+                )
+
+            # ③ If no primary image exists anymore, promote the first one
+            if not property_obj.images.filter(is_primary=True).exists():
+                first = property_obj.images.first()
+                if first:
+                    first.is_primary = True
+                    first.save(update_fields=["is_primary"])
+
+            messages.success(request, "Property updated and resubmitted for review.")
+            return redirect("my_properties")
+
+        messages.error(request, "Please fix the errors below.")
+
+    else:
+        form = PropertyForm(instance=property_obj)
+        facility_form = FacilityForm(instance=facility_obj)
+
+    return render(request, "properties/edit_property.html", {
+        "form": form,
+        "facility_form": facility_form,
+        "property": property_obj,
+    })
+
+@login_required
+def delete_property(request, pk):
+    property_obj = get_object_or_404(Property, pk=pk, owner=request.user)
+
+    if request.method == "POST":
+        property_obj.delete()
+        messages.success(request, "Property deleted successfully.")
+        return redirect("my_properties")
+
+    return redirect("my_properties")

@@ -1,0 +1,613 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Property{% endblock %}
+
+{% block content %}
+<style>
+  .breadcrumb-line {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    margin-left: 205px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .breadcrumb-line a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .breadcrumb-line a:hover {
+    color: var(--p);
+  }
+
+  .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 28px; margin-bottom: 20px; }
+  .card h2 { font-size: 1rem; font-weight: 700; color: #1a1a2e; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f3f4f6; }
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font-size: .8rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: .3px; margin-bottom: 6px; }
+  .field label .req { color: #0F6E56; margin-left: 2px; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 10px 13px; border: 1.5px solid #e5e7eb; border-radius: 8px;
+    font-size: .9rem; font-family: inherit; color: #1a1a2e; background: #fff; outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: #0F6E56; box-shadow: 0 0 0 3px rgba(15, 110, 86, .1);
+  }
+  .field textarea { resize: vertical; min-height: 90px; }
+  .field select { appearance: none; cursor: pointer; }
+  .field .errorlist { list-style: none; margin-top: 5px; }
+  .field .errorlist li { font-size: .78rem; color: #c0392b; }
+  .field .hint { font-size: .76rem; color: #9ca3af; margin-top: 5px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .input-affix { display: flex; border: 1.5px solid #e5e7eb; border-radius: 8px; overflow: hidden; transition: border-color .15s, box-shadow .15s; }
+  .input-affix:focus-within { border-color: #0F6E56; box-shadow: 0 0 0 3px rgba(15, 110, 86, .1); }
+  .input-affix span { background: #f9fafb; padding: 10px 12px; font-size: .82rem; color: #9ca3af; border-right: 1px solid #e5e7eb; font-weight: 600; display: flex; align-items: center; }
+  .input-affix input { border: none !important; box-shadow: none !important; border-radius: 0 !important; flex: 1; }
+
+  .facility-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+  .fac-item { border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 11px 13px; display: flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; transition: all .15s; }
+  .fac-item:hover, .fac-item.checked { border-color: #0F6E56; background: #eef0fb; }
+  .fac-item input[type=checkbox] { display: none; }
+  .fac-box { width: 17px; height: 17px; border-radius: 4px; border: 1.5px solid #d1d5db; flex-shrink: 0; display: grid; place-items: center; transition: all .15s; }
+  .fac-item.checked .fac-box { background: #0F6E56; border-color: #0F6E56; }
+  .fac-item.checked .fac-box::after { content: ''; display: block; width: 4px; height: 8px; border: 2px solid #fff; border-top: none; border-left: none; transform: rotate(45deg) translate(-1px,-1px); }
+  .fac-item .fac-icon { font-size: 1rem; flex-shrink: 0; }
+  .fac-item span.fac-label { font-size: .82rem; font-weight: 500; color: #374151; }
+
+  .drop-zone { border: 2px dashed #e5e7eb; border-radius: 8px; padding: 32px 20px; text-align: center; cursor: pointer; position: relative; transition: all .2s; }
+  .drop-zone:hover, .drop-zone.drag-over { border-color: #0F6E56; background: #eef0fb; }
+  .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  #img-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 14px; }
+  #new-img-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 14px; }
+  .thumb { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1.5px solid #e5e7eb; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .thumb .cover { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(15, 110, 86, .85); color: #fff; font-size: .65rem; font-weight: 700; text-align: center; padding: 3px; }
+  .thumb .rm { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,.5); border: none; border-radius: 50%; width: 20px; height: 20px; color: #fff; cursor: pointer; font-size: .75rem; display: grid; place-items: center; }
+
+  .lalpurja-upload { border: 1.5px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+  .lalpurja-upload input[type=file] { display: none; }
+  .lalpurja-trigger { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; transition: background .15s; }
+  .lalpurja-trigger:hover { background: #f9fafb; }
+  .lalpurja-trigger .lp-icon { width: 40px; height: 40px; border-radius: 8px; background: #fef3c7; display: grid; place-items: center; font-size: 1.2rem; flex-shrink: 0; }
+  .lalpurja-trigger .lp-text strong { display: block; font-size: .88rem; font-weight: 600; color: #1a1a2e; }
+  .lalpurja-trigger .lp-text span { font-size: .76rem; color: #9ca3af; }
+  .lalpurja-trigger .lp-btn { margin-left: auto; padding: 7px 16px; border-radius: 6px; background: #f3f4f6; border: 1px solid #e5e7eb; font-size: .8rem; font-weight: 600; color: #374151; cursor: pointer; white-space: nowrap; }
+  .lalpurja-preview { display: none; padding: 14px 16px; border-top: 1px solid #e5e7eb; background: #f9fafb; align-items: center; gap: 12px; }
+  .lalpurja-preview img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; border: 1px solid #e5e7eb; }
+  .lalpurja-preview .lp-filename { font-size: .83rem; color: #374151; font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lalpurja-preview .lp-remove { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: .8rem; padding: 4px; }
+  .lalpurja-preview .lp-remove:hover { color: #c0392b; }
+  .lalpurja-notice { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px; background: #fffbeb; border-top: 1px solid #fde68a; font-size: .78rem; color: #92400e; }
+
+  .existing-lalpurja {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f0fdf4;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .existing-lalpurja img {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+  }
+  .existing-lalpurja .lp-filename {
+    font-size: .83rem;
+    color: #374151;
+    font-weight: 500;
+    flex: 1;
+  }
+  .existing-lalpurja a {
+    font-size: .8rem;
+    color: #0F6E56;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .existing-lalpurja a:hover { text-decoration: underline; }
+
+  .review-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 24px;
+    font-size: .85rem;
+    color: #92400e;
+  }
+  .review-notice strong { display: block; margin-bottom: 2px; }
+
+  @media (max-width: 600px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+</style>
+
+<div class="breadcrumb-line">
+  <a href="{% url 'property_list' %}">
+    <i class="ti ti-home" aria-hidden="true"></i>
+    Properties
+  </a>
+  <i class="ti ti-chevron-right" aria-hidden="true"></i>
+  <a href="{% url 'my_properties' %}">
+    My Properties
+  </a>
+  <i class="ti ti-chevron-right" aria-hidden="true"></i>
+  <span>Edit</span>
+</div>
+
+<div style="max-width: 780px; margin: 40px auto; padding: 0 20px;">
+
+  <div style="margin-bottom: 28px;">
+    <h1 style="font-size: 1.5rem; font-weight: 700; color: #0F6E56;">Edit property</h1>
+    <p style="color: #6b7280; margin-top: 4px; font-size: .9rem;">
+      Update your listing details. Changes will be resubmitted for admin review.
+    </p>
+  </div>
+
+  <!-- Review notice -->
+  <div class="review-notice">
+    <span style="font-size:1.2rem;">⚠️</span>
+    <div>
+      <strong>Heads up</strong>
+      Saving changes will reset this property's status back to <strong>Pending</strong> until an admin reviews and approves the updated listing.
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <!-- ① Basic Info -->
+    <div class="card">
+      <h2>🏠 Basic information</h2>
+
+      <div class="field">
+        <label for="{{ form.title.id_for_label }}">Title <span class="req">*</span></label>
+        <input type="text" name="{{ form.title.html_name }}" id="{{ form.title.id_for_label }}"
+          value="{{ form.title.value|default_if_none:'' }}" placeholder="e.g. Bright 2-room flat near Thamel">
+        {% if form.title.errors %}<ul class="errorlist">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+      <div class="field">
+        <label for="{{ form.property_type.id_for_label }}">Property type <span class="req">*</span></label>
+        <select name="{{ form.property_type.html_name }}" id="{{ form.property_type.id_for_label }}">
+          <option value="">— Select type —</option>
+          {% for val, lbl in form.fields.property_type.choices %}
+            <option value="{{ val }}" {% if form.property_type.value == val %}selected{% endif %}>{{ lbl }}</option>
+          {% endfor %}
+        </select>
+        {% if form.property_type.errors %}<ul class="errorlist">{% for e in form.property_type.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+      <div class="field" style="margin-bottom:0">
+        <label for="{{ form.description.id_for_label }}">Description <span class="req">*</span></label>
+        <textarea name="{{ form.description.html_name }}" id="{{ form.description.id_for_label }}"
+          placeholder="Describe the property — nearby landmarks, condition, who it suits…"
+          rows="4">{{ form.description.value|default_if_none:'' }}</textarea>
+        {% if form.description.errors %}<ul class="errorlist">{% for e in form.description.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+    <!-- ② Location -->
+    <div class="card">
+      <h2>📍 Location</h2>
+
+      <div class="grid-3" style="margin-bottom:18px;">
+
+        <div class="field" style="margin-bottom:0">
+          <label for="{{ form.province.id_for_label }}">Province <span class="req">*</span></label>
+          {{ form.province }}
+          {% if form.province.errors %}
+            <ul class="errorlist">{% for e in form.province.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="field" style="margin-bottom:0">
+          <label for="{{ form.district.id_for_label }}">District <span class="req">*</span></label>
+          {{ form.district }}
+          {% if form.district.errors %}
+            <ul class="errorlist">{% for e in form.district.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="field" style="margin-bottom:0">
+          <label for="{{ form.city.id_for_label }}">City <span class="req">*</span></label>
+          <input type="text" name="{{ form.city.html_name }}" id="{{ form.city.id_for_label }}"
+            value="{{ form.city.value|default_if_none:'' }}" placeholder="e.g. Kathmandu">
+          {% if form.city.errors %}
+            <ul class="errorlist">{% for e in form.city.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <div class="grid-2" style="margin-bottom:18px;">
+        <div class="field" style="margin-bottom:0">
+          <label for="{{ form.area.id_for_label }}">Area / Tole <span class="req">*</span></label>
+          <input type="text" name="{{ form.area.html_name }}" id="{{ form.area.id_for_label }}"
+            value="{{ form.area.value|default_if_none:'' }}" placeholder="e.g. Baneshwor">
+          {% if form.area.errors %}<ul class="errorlist">{% for e in form.area.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label for="{{ form.ward_number.id_for_label }}">Ward number <span class="req">*</span></label>
+          <input type="number" name="{{ form.ward_number.html_name }}" id="{{ form.ward_number.id_for_label }}"
+            value="{{ form.ward_number.value|default_if_none:'' }}" min="1" placeholder="e.g. 10">
+          {% if form.ward_number.errors %}<ul class="errorlist">{% for e in form.ward_number.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field" style="margin-bottom:0">
+          <label for="{{ form.latitude.id_for_label }}">Latitude <span class="req">*</span></label>
+          <input type="number" step="0.000001" name="{{ form.latitude.html_name }}" id="{{ form.latitude.id_for_label }}"
+            value="{{ form.latitude.value|default_if_none:'' }}" placeholder="27.700000">
+          {% if form.latitude.errors %}<ul class="errorlist">{% for e in form.latitude.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label for="{{ form.longitude.id_for_label }}">Longitude <span class="req">*</span></label>
+          <input type="number" step="0.000001" name="{{ form.longitude.html_name }}" id="{{ form.longitude.id_for_label }}"
+            value="{{ form.longitude.value|default_if_none:'' }}" placeholder="85.300000">
+          {% if form.longitude.errors %}<ul class="errorlist">{% for e in form.longitude.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ Pricing -->
+    <div class="card">
+      <h2>💰 Pricing & availability</h2>
+
+      <div class="grid-2" style="margin-bottom:18px;">
+        <div class="field" style="margin-bottom:0">
+          <label for="{{ form.monthly_rent.id_for_label }}">Monthly rent <span class="req">*</span></label>
+          <div class="input-affix">
+            <span>NPR</span>
+            <input type="number" name="{{ form.monthly_rent.html_name }}" id="{{ form.monthly_rent.id_for_label }}"
+              value="{{ form.monthly_rent.value|default_if_none:'' }}" placeholder="15000" min="0">
+          </div>
+          {% if form.monthly_rent.errors %}<ul class="errorlist">{% for e in form.monthly_rent.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label for="{{ form.security_deposit.id_for_label }}">Security deposit <span class="req">*</span></label>
+          <div class="input-affix">
+            <span>NPR</span>
+            <input type="number" name="{{ form.security_deposit.html_name }}" id="{{ form.security_deposit.id_for_label }}"
+              value="{{ form.security_deposit.value|default_if_none:'' }}" placeholder="30000" min="0">
+          </div>
+          {% if form.security_deposit.errors %}<ul class="errorlist">{% for e in form.security_deposit.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+      </div>
+
+      <div class="field" style="max-width: 240px; margin-bottom:0">
+        <label for="{{ form.available_date.id_for_label }}">Available from <span class="req">*</span></label>
+        <input type="date" name="{{ form.available_date.html_name }}" id="{{ form.available_date.id_for_label }}"
+          value="{{ form.available_date.value|default_if_none:'' }}">
+        {% if form.available_date.errors %}<ul class="errorlist">{% for e in form.available_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+    <!-- ④ Facilities -->
+    <div class="card">
+      <h2>✨ Facilities</h2>
+      <div class="facility-grid">
+
+        <label class="fac-item {% if facility_form.car_parking.value %}checked{% endif %}" for="{{ facility_form.car_parking.id_for_label }}">
+          <input type="checkbox" name="{{ facility_form.car_parking.html_name }}" id="{{ facility_form.car_parking.id_for_label }}" {% if facility_form.car_parking.value %}checked{% endif %}>
+          <span class="fac-box"></span><span class="fac-icon">🚗</span><span class="fac-label">Car Parking</span>
+        </label>
+
+        <label class="fac-item {% if facility_form.bike_parking.value %}checked{% endif %}" for="{{ facility_form.bike_parking.id_for_label }}">
+          <input type="checkbox" name="{{ facility_form.bike_parking.html_name }}" id="{{ facility_form.bike_parking.id_for_label }}" {% if facility_form.bike_parking.value %}checked{% endif %}>
+          <span class="fac-box"></span><span class="fac-icon">🛵</span><span class="fac-label">Bike Parking</span>
+        </label>
+
+        <label class="fac-item {% if facility_form.wifi.value %}checked{% endif %}" for="{{ facility_form.wifi.id_for_label }}">
+          <input type="checkbox" name="{{ facility_form.wifi.html_name }}" id="{{ facility_form.wifi.id_for_label }}" {% if facility_form.wifi.value %}checked{% endif %}>
+          <span class="fac-box"></span><span class="fac-icon">📶</span><span class="fac-label">WiFi</span>
+        </label>
+
+        <label class="fac-item {% if facility_form.drinking_water.value %}checked{% endif %}" for="{{ facility_form.drinking_water.id_for_label }}">
+          <input type="checkbox" name="{{ facility_form.drinking_water.html_name }}" id="{{ facility_form.drinking_water.id_for_label }}" {% if facility_form.drinking_water.value %}checked{% endif %}>
+          <span class="fac-box"></span><span class="fac-icon">💧</span><span class="fac-label">Drinking Water</span>
+        </label>
+
+        <label class="fac-item {% if facility_form.water_supply_24_7.value %}checked{% endif %}" for="{{ facility_form.water_supply_24_7.id_for_label }}">
+          <input type="checkbox" name="{{ facility_form.water_supply_24_7.html_name }}" id="{{ facility_form.water_supply_24_7.id_for_label }}" {% if facility_form.water_supply_24_7.value %}checked{% endif %}>
+          <span class="fac-box"></span><span class="fac-icon">🚰</span><span class="fac-label">24/7 Water Supply</span>
+        </label>
+
+        <label class="fac-item {% if facility_form.attached_bathroom.value %}checked{% endif %}" for="{{ facility_form.attached_bathroom.id_for_label }}">
+          <input type="checkbox" name="{{ facility_form.attached_bathroom.html_name }}" id="{{ facility_form.attached_bathroom.id_for_label }}" {% if facility_form.attached_bathroom.value %}checked{% endif %}>
+          <span class="fac-box"></span><span class="fac-icon">🚿</span><span class="fac-label">Attached Bathroom</span>
+        </label>
+
+        <label class="fac-item {% if facility_form.balcony.value %}checked{% endif %}" for="{{ facility_form.balcony.id_for_label }}">
+          <input type="checkbox" name="{{ facility_form.balcony.html_name }}" id="{{ facility_form.balcony.id_for_label }}" {% if facility_form.balcony.value %}checked{% endif %}>
+          <span class="fac-box"></span><span class="fac-icon">🪟</span><span class="fac-label">Balcony</span>
+        </label>
+
+        <label class="fac-item {% if facility_form.furnished.value %}checked{% endif %}" for="{{ facility_form.furnished.id_for_label }}">
+          <input type="checkbox" name="{{ facility_form.furnished.html_name }}" id="{{ facility_form.furnished.id_for_label }}" {% if facility_form.furnished.value %}checked{% endif %}>
+          <span class="fac-box"></span><span class="fac-icon">🛋️</span><span class="fac-label">Furnished</span>
+        </label>
+
+        <label class="fac-item {% if facility_form.cctv.value %}checked{% endif %}" for="{{ facility_form.cctv.id_for_label }}">
+          <input type="checkbox" name="{{ facility_form.cctv.html_name }}" id="{{ facility_form.cctv.id_for_label }}" {% if facility_form.cctv.value %}checked{% endif %}>
+          <span class="fac-box"></span><span class="fac-icon">📹</span><span class="fac-label">CCTV</span>
+        </label>
+
+        <label class="fac-item {% if facility_form.security_guard.value %}checked{% endif %}" for="{{ facility_form.security_guard.id_for_label }}">
+          <input type="checkbox" name="{{ facility_form.security_guard.html_name }}" id="{{ facility_form.security_guard.id_for_label }}" {% if facility_form.security_guard.value %}checked{% endif %}>
+          <span class="fac-box"></span><span class="fac-icon">💂</span><span class="fac-label">Security Guard</span>
+        </label>
+
+        <label class="fac-item {% if facility_form.pet_allowed.value %}checked{% endif %}" for="{{ facility_form.pet_allowed.id_for_label }}">
+          <input type="checkbox" name="{{ facility_form.pet_allowed.html_name }}" id="{{ facility_form.pet_allowed.id_for_label }}" {% if facility_form.pet_allowed.value %}checked{% endif %}>
+          <span class="fac-box"></span><span class="fac-icon">🐾</span><span class="fac-label">Pet Allowed</span>
+        </label>
+
+        <label class="fac-item {% if facility_form.laundry_facility.value %}checked{% endif %}" for="{{ facility_form.laundry_facility.id_for_label }}">
+          <input type="checkbox" name="{{ facility_form.laundry_facility.html_name }}" id="{{ facility_form.laundry_facility.id_for_label }}" {% if facility_form.laundry_facility.value %}checked{% endif %}>
+          <span class="fac-box"></span><span class="fac-icon">👕</span><span class="fac-label">Laundry</span>
+        </label>
+
+        <label class="fac-item {% if facility_form.lift.value %}checked{% endif %}" for="{{ facility_form.lift.id_for_label }}">
+          <input type="checkbox" name="{{ facility_form.lift.html_name }}" id="{{ facility_form.lift.id_for_label }}" {% if facility_form.lift.value %}checked{% endif %}>
+          <span class="fac-box"></span><span class="fac-icon">🛗</span><span class="fac-label">Lift</span>
+        </label>
+
+        <label class="fac-item {% if facility_form.generator.value %}checked{% endif %}" for="{{ facility_form.generator.id_for_label }}">
+          <input type="checkbox" name="{{ facility_form.generator.html_name }}" id="{{ facility_form.generator.id_for_label }}" {% if facility_form.generator.value %}checked{% endif %}>
+          <span class="fac-box"></span><span class="fac-icon">⚡</span><span class="fac-label">Generator</span>
+        </label>
+
+      </div>
+    </div>
+
+    <!-- ⑤ Photos -->
+    <div class="card">
+      <h2>📷 Property photos</h2>
+
+      {% if property.images.all %}
+      <div style="margin-bottom:18px;">
+        <p style="font-size:.8rem; color:#6b7280; font-weight:600; margin-bottom:10px;">
+          Current photos
+        </p>
+        <div id="img-preview">
+          {% for img in property.images.all %}
+          <div class="thumb" id="existing-img-{{ img.pk }}">
+            <img src="{{ img.image.url }}" alt="">
+            {% if img.is_primary %}
+              <div class="cover">Cover</div>
+            {% endif %}
+            <button
+              type="button"
+              class="rm"
+              onclick="deleteExistingImage({{ img.pk }}, this)"
+              title="Remove"
+            >✕</button>
+          </div>
+          {% endfor %}
+        </div>
+        <input type="hidden" name="delete_images" id="delete-images-input" value="">
+        <p class="hint" style="margin-top:8px; font-size:.74rem; color:#9ca3af;">
+          Click ✕ to remove a photo. Changes take effect when you save.
+        </p>
+      </div>
+      {% endif %}
+
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" name="images" id="id_images" multiple accept="image/*" onchange="previewNewImgs(event)">
+        <div style="font-size:1.8rem; margin-bottom:8px;">🖼️</div>
+        <p style="font-size:.88rem; color:#6b7280;">
+          <strong style="color:#5c6ac4;">Click to upload</strong> or drag and drop new photos
+        </p>
+        <p style="font-size:.75rem; color:#9ca3af; margin-top:4px;">PNG, JPG, WEBP — up to 10 photos</p>
+      </div>
+      <div id="new-img-preview"></div>
+    </div>
+
+    <!-- ⑥ Lalpurja -->
+    <div class="card">
+      <h2>📄 Ownership document <span style="font-size:.8rem; font-weight:400; color:#9ca3af;">(Lalpurja)</span></h2>
+
+      <div class="lalpurja-upload" id="lalpurja-upload-box">
+
+        {% if property.lalpurja_image %}
+        <div class="existing-lalpurja">
+          <img src="{{ property.lalpurja_image.url }}" alt="Current lalpurja">
+          <div class="lp-filename">Current document uploaded</div>
+          <a href="{{ property.lalpurja_image.url }}" target="_blank">View</a>
+        </div>
+        {% endif %}
+
+        <label class="lalpurja-trigger" for="{{ form.lalpurja_image.id_for_label }}" id="lalpurja-trigger">
+          <div class="lp-icon">📜</div>
+          <div class="lp-text">
+            <strong>{% if property.lalpurja_image %}Replace document{% else %}Upload Lalpurja{% endif %}</strong>
+            <span>JPG, PNG or PDF · max 5 MB</span>
+          </div>
+          <span class="lp-btn">Choose file</span>
+        </label>
+
+        <input type="file" name="{{ form.lalpurja_image.html_name }}" id="{{ form.lalpurja_image.id_for_label }}"
+          accept="image/*,.pdf" onchange="previewLalpurja(event)">
+
+        <div class="lalpurja-preview" id="lalpurja-preview">
+          <img id="lalpurja-thumb" src="" alt="Lalpurja preview">
+          <span class="lp-filename" id="lalpurja-filename"></span>
+          <button type="button" class="lp-remove" id="lalpurja-remove" title="Remove">✕ Remove</button>
+        </div>
+
+        <div class="lalpurja-notice">
+          <span>🔒</span>
+          <span>This document is used for verification only and will not be shown to tenants.</span>
+        </div>
+      </div>
+
+      {% if form.lalpurja_image.errors %}
+        <ul class="errorlist" style="margin-top:8px; list-style:none;">
+          {% for e in form.lalpurja_image.errors %}
+            <li style="font-size:.78rem; color:#c0392b;">{{ e }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    <!-- ⑦ Rules -->
+    <div class="card">
+      <h2>📋 House rules <span style="font-size:.8rem; font-weight:400; color:#9ca3af;">(optional)</span></h2>
+      <div class="field" style="margin-bottom:0">
+        <textarea name="{{ form.rules.html_name }}" id="{{ form.rules.id_for_label }}"
+          placeholder="e.g. No smoking inside. Guests allowed till 10 PM."
+          rows="4">{{ form.rules.value|default_if_none:'' }}</textarea>
+        {% if form.rules.errors %}<ul class="errorlist">{% for e in form.rules.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:40px;">
+      <a href="{% url 'my_properties' %}"
+         style="padding:10px 22px; border-radius:8px; border:1.5px solid #e5e7eb; font-size:.88rem; font-weight:600; color:#6b7280; text-decoration:none; background:#fff;">
+        Cancel
+      </a>
+      <button type="submit"
+              style="padding:10px 26px; border-radius:8px; background:#0F6E56; color:#fff; border:none; font-size:.88rem; font-weight:600; cursor:pointer; font-family:inherit;">
+        Save changes →
+      </button>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  /* Facility toggle */
+  document.querySelectorAll('.fac-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const cb = item.querySelector('input[type=checkbox]');
+      cb.checked = !cb.checked;
+      item.classList.toggle('checked', cb.checked);
+    });
+  });
+
+  /* Drag and drop */
+  const zone = document.getElementById('drop-zone');
+  ['dragover','dragenter'].forEach(e => zone.addEventListener(e, ev => { ev.preventDefault(); zone.classList.add('drag-over'); }));
+  ['dragleave','drop'].forEach(e => zone.addEventListener(e, () => zone.classList.remove('drag-over')));
+
+  /* New image preview */
+  function previewNewImgs(e) {
+    const container = document.getElementById('new-img-preview');
+    container.innerHTML = '';
+    Array.from(e.target.files).slice(0, 10).forEach((file, i) => {
+      const r = new FileReader();
+      r.onload = ev => {
+        const d = document.createElement('div');
+        d.className = 'thumb';
+        d.innerHTML = `<img src="${ev.target.result}">
+          <button type="button" class="rm">✕</button>`;
+        d.querySelector('.rm').onclick = () => d.remove();
+        container.appendChild(d);
+      };
+      r.readAsDataURL(file);
+    });
+  }
+
+  /* Mark existing image for deletion */
+  const toDelete = [];
+
+  function deleteExistingImage(pk, btn) {
+    toDelete.push(pk);
+    document.getElementById('delete-images-input').value = toDelete.join(',');
+    const thumb = document.getElementById(`existing-img-${pk}`);
+    if (thumb) thumb.remove();
+  }
+
+  /* Lalpurja preview */
+  function previewLalpurja(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const preview  = document.getElementById('lalpurja-preview');
+    const thumb    = document.getElementById('lalpurja-thumb');
+    const fname    = document.getElementById('lalpurja-filename');
+
+    fname.textContent = file.name;
+    preview.style.display = 'flex';
+
+    if (file.type.startsWith('image/')) {
+      const r = new FileReader();
+      r.onload = ev => { thumb.src = ev.target.result; thumb.style.display = 'block'; };
+      r.readAsDataURL(file);
+    } else {
+      thumb.style.display = 'none';
+    }
+  }
+
+  document.getElementById('lalpurja-remove').addEventListener('click', () => {
+    document.getElementById('{{ form.lalpurja_image.id_for_label }}').value = '';
+    document.getElementById('lalpurja-preview').style.display = 'none';
+  });
+
+  /* Province / district dynamic loading */
+  document.addEventListener("DOMContentLoaded", function () {
+    const provinceSelect = document.getElementById("provinceSelect");
+    const districtSelect = document.getElementById("districtSelect");
+
+    if (!provinceSelect || !districtSelect) return;
+
+    const selectedDistrict = "{{ form.district.value|default:'' }}";
+
+    function loadDistricts(province, keepSelected = false) {
+      districtSelect.innerHTML = '<option value="">Loading districts...</option>';
+      districtSelect.disabled = true;
+
+      if (!province) {
+        districtSelect.innerHTML = '<option value="">Select district</option>';
+        districtSelect.disabled = false;
+        return;
+      }
+
+      fetch("{% url 'get_districts_by_province' %}?province=" + encodeURIComponent(province))
+        .then(r => r.json())
+        .then(data => {
+          districtSelect.innerHTML = '<option value="">Select district</option>';
+          data.districts.forEach(d => {
+            const opt = document.createElement("option");
+            opt.value = d;
+            opt.textContent = d;
+            if (keepSelected && d === selectedDistrict) opt.selected = true;
+            districtSelect.appendChild(opt);
+          });
+          districtSelect.disabled = false;
+        })
+        .catch(() => {
+          districtSelect.innerHTML = '<option value="">Select district</option>';
+          districtSelect.disabled = false;
+        });
+    }
+
+    provinceSelect.addEventListener("change", function () {
+      loadDistricts(this.value, false);
+    });
+
+    if (provinceSelect.value) {
+      loadDistricts(provinceSelect.value, true);
+    }
+  });
+</script>
+
+{% endblock %}

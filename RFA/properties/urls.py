@@ -56,4 +56,6 @@ urlpatterns = [
         views.my_properties,
         name="my_properties",
     ),
+    path("my-properties/<int:pk>/edit/", views.edit_property, name="edit_property"),
+    path("my-properties/<int:pk>/delete/", views.delete_property, name="delete_property"),
 ]
