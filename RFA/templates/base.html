@@ -1126,16 +1126,16 @@
         </p>
 
         <div class="footer-socials">
-          <a href="#" class="social-btn">
-            <i class="ti ti-brand-facebook"></i>
+          <a href="https://www.linkedin.com/in/preeti-gurung-28a040239" class="social-btn">
+            <i class="ti ti-brand-linkedin"></i>
           </a>
 
-          <a href="#" class="social-btn">
+          <a href="https://www.instagram.com/preetii.grg/" class="social-btn">
             <i class="ti ti-brand-instagram"></i>
           </a>
 
-          <a href="#" class="social-btn">
-            <i class="ti ti-brand-twitter"></i>
+          <a href="https://github.com/Preeti7777" class="social-btn">
+            <i class="ti ti-brand-github"></i>
           </a>
         </div>
       </div>
@@ -1143,9 +1143,10 @@
       <div class="footer-col">
         <h4>Explore</h4>
         <a href="{% url 'property_list' %}">Browse Rooms</a>
-        <a href="#">Featured Listings</a>
-        <a href="#">Nearby Rooms</a>
-        <a href="#">New Arrivals</a>
+        {% if user.is_authenticated and user.role == 'LANDLORD' %}
+          <a href="{% url 'add_property' %}">Add Property</a>
+          <a href="{% url 'documents' %}">Documents</a>
+        {% endif %}
       </div>
 
       <div class="footer-col">
@@ -1155,31 +1156,16 @@
           {% if user.role == 'TENANT' %}
             <a href="{% url 'wishlist_list' %}">Saved Rooms</a>
           {% endif %}
-          <a href="#">Settings</a>
         {% else %}
           <a href="{% url 'login' %}">Login</a>
         {% endif %}
       </div>
-
-      <div class="footer-col">
-        <h4>Support</h4>
-        <a href="#">Help Center</a>
-        <a href="#">Contact Us</a>
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Service</a>
-      </div>
-
     </div>
 
     <div class="footer-bottom">
       <div class="footer-bottom-inner">
         <p>&copy; {% now "Y" %} GharKhoj. All rights reserved.</p>
-
-        <div class="footer-bottom-links">
-          <a href="#">Privacy</a>
-          <a href="#">Terms</a>
-          <a href="#">Cookies</a>
-        </div>
+        <p>Made with <i class="ti ti-heart" style="color: #ff4757;"></i> by <a href="https://github.com/Preeti7777" target="_blank" style="color: #007bff;">Preeti Gurung</a></p>
       </div>
     </div>
   </footer>
